@@ -51,6 +51,8 @@ export default function Login() {
                 else{
                     localStorage.setItem("login", true);
                     localStorage.setItem("user", user);
+                    // localStorage.setItem("logged_data", response[0].user);
+                    localStorage.setItem("logged_data", JSON.stringify(response[0].user));
                     navigate("/home");
                 }
             }).catch(error => {
@@ -59,8 +61,8 @@ export default function Login() {
                 });
             } else {
               setError("All fields are required!");
-            }
-          };
+        }
+    };
 
 
     return (

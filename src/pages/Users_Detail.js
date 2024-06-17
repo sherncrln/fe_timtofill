@@ -2,7 +2,7 @@ import React from "react";
 import NavBar from "../components/NavBar";
 import { useNavigate } from "react-router-dom";
 
-export default function Profile() {
+export default function UsersDetail() {
     const logged_data = JSON.parse(localStorage.getItem("logged_data"));
     const navigate = useNavigate();
 
