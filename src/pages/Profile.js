@@ -1,13 +1,46 @@
-import React from "react";
+import { useState, useEffect } from "react";
 import NavBar from "../components/NavBar";
+import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 export default function Profile() {
     const logged_data = JSON.parse(localStorage.getItem("logged_data"));
     const navigate = useNavigate();
 
+    const [userData, setUserData] = useState([]);
 
-  return (
+    useEffect(() => {
+        // getUserData();
+        console.log(userData);
+    }, []);
+
+    // function getUserData(){
+    //     axios.get(`http://localhost/timetofill/profile.php`, ).then(function(response){
+    //         console.log(response.data);
+    //         setUserData(response.data);
+    //     });
+        
+    // }
+
+    const handleChange = (event) => {
+        const name = event.target.name;
+        const value = event.target.value;
+        setUserData(values => ({...values, [name]: value}));
+    }
+
+    const handleSubmit = (event)=>{
+        event.preventDefault();
+
+        // axios.put(`http://localhost/timetofill/profile.php`, userData).then(function(response) {
+        //     console.log(response.data);
+        //     navigate('/');
+        // });
+    }
+
+
+    
+
+    return (
     <>
       <div>
         <NavBar />
@@ -19,13 +52,13 @@ export default function Profile() {
                     className="text-sm text-blue-950 text-bold font-semibold">
                     Username
                 </label>
-                <input
+                <input disabled
                     type="text"
-                    className="w-80 h-10 px-4 peer py-2 text-blue-900 bg-transparent border border-blue-950 rounded"
+                    className="w-80 h-10 px-4 peer py-2 text-blue-900 bg-transparent border border-blue-950 rounded disabled:bg-slate-100 "
                     id="username"
                     name="username"
                     placeholder=""
-                    value={logged_data['username']}
+                    value={userData.username}
                 />
             </div>
             <div className= "w-80 mb-2">
@@ -33,13 +66,13 @@ export default function Profile() {
                     className="text-sm text-blue-950 text-bold font-semibold">
                     Name
                 </label>
-                <input
+                <input disabled
                     type="text"
-                    className="w-80 h-10 px-4 peer py-2 text-blue-900 bg-transparent border border-blue-950 rounded"
+                    className="w-80 h-10 px-4 peer py-2 text-blue-900 bg-transparent border border-blue-950 rounded disabled:bg-slate-100 "
                     id="name"
                     name="name"
                     placeholder=""
-                    value={logged_data['name']}
+                    value={userData.name}
                 />
             </div>
             <div className= "w-80 mb-2">
@@ -47,13 +80,13 @@ export default function Profile() {
                     className="text-sm text-blue-950 text-bold font-semibold">
                     Category
                 </label>
-                <input
+                <input disabled
                     type="text"
-                    className="w-80 h-10 px-4 peer py-2 text-blue-900 bg-transparent border border-blue-950 rounded"
+                    className="w-80 h-10 px-4 peer py-2 text-blue-900 bg-transparent border border-blue-950 rounded disabled:bg-slate-100 "
                     id="category"
                     name="category"
                     placeholder=""
-                    value={logged_data['category']}
+                    value={userData.category}
                 />
             </div>
             <div className= "w-80 mb-2">
@@ -61,13 +94,13 @@ export default function Profile() {
                     className="text-sm text-blue-950 text-bold font-semibold">
                     Class
                 </label>
-                <input
+                <input disabled
                     type="text"
-                    className="w-80 h-10 px-4 peer py-2 text-blue-900 bg-transparent border border-blue-950 rounded"
+                    className="w-80 h-10 px-4 peer py-2 text-blue-900 bg-transparent border border-blue-950 rounded disabled:bg-slate-100 "
                     id="class"
                     name="class"
                     placeholder=""
-                    value={logged_data['class']}
+                    value={userData.classs}
                 />
             </div>
             <div className= "w-80 mb-2">
@@ -75,13 +108,13 @@ export default function Profile() {
                     className="text-sm text-blue-950 text-bold font-semibold">
                     Email
                 </label>
-                <input
+                <input disabled
                     type="text"
-                    className="w-80 h-10 px-4 peer py-2 text-blue-900 bg-transparent border border-blue-950 rounded"
+                    className="w-80 h-10 px-4 peer py-2 text-blue-900 bg-transparent border border-blue-950 rounded disabled:bg-slate-100 "
                     id="email"
                     name="email"
                     placeholder=""
-                    value={logged_data['email']}
+                    value={userData.email}
                 />
             </div>
             <div className= "w-80 mb-6">
@@ -95,7 +128,8 @@ export default function Profile() {
                     id="password"
                     name="password"
                     placeholder=""
-                    value={logged_data['password']}
+                    value={userData.password}
+                    onChange={handleChange}
                 />
             </div>
             <div className= " mb-2 px-4 tracking-widest text-[#f8fafc]">

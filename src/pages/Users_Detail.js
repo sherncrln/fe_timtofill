@@ -1,11 +1,42 @@
-import React from "react";
+import {useEffect, useState} from "react";
 import NavBar from "../components/NavBar";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import axios from "axios";
 
 export default function UsersDetail() {
     const logged_data = JSON.parse(localStorage.getItem("logged_data"));
     const navigate = useNavigate();
+    const [userData, setUserData] = useState([]);
+    const {id} = useParams();
+    console.log(id);
 
+    const handleChange = (event) => {
+        const name = event.target.name;
+        const value = event.target.value;
+        setUserData(values => ({...values, [name]: value}));
+    }
+
+    useEffect( () => {
+        getUserData();
+        console.log(userData[id]);
+      }, []);
+    
+    function getUserData(){
+        // axios.get(`http://localhost/api/user/${id}`).then(function(response){
+        //     console.log(response.data);
+        //     setUserData(response.data);
+        // });
+        
+    }
+
+    const handleSubmit = (event)=>{
+        event.preventDefault();
+
+        // axios.put(`http://localhost/timetofill/profile.php`, userData).then(function(response) {
+        //     console.log(response.data);
+        //     navigate('/');
+        // });
+    }
 
   return (
     <>
@@ -87,7 +118,7 @@ export default function UsersDetail() {
             <div className= "w-80 mb-6">
                 <label
                     className="text-sm text-blue-950 text-bold font-semibold">
-                    Password
+                    Status
                 </label>
                 <input
                     type="password"
