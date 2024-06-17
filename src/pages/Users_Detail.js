@@ -8,7 +8,7 @@ export default function UsersDetail() {
     const navigate = useNavigate();
     const [userData, setUserData] = useState([]);
     const {id} = useParams();
-    console.log(id);
+    //console.log(id);
 
     const handleChange = (event) => {
         const name = event.target.name;
@@ -18,14 +18,14 @@ export default function UsersDetail() {
 
     useEffect( () => {
         getUserData();
-        console.log(userData[id]);
+        //console.log(userData[id]);
       }, []);
     
     function getUserData(){
-        // axios.get(`http://localhost/api/user/${id}`).then(function(response){
-        //     console.log(response.data);
-        //     setUserData(response.data);
-        // });
+        axios.get(`http://localhost/timetofill/users.php`, id).then(function(response){
+            setUserData(response.data);
+            console.log(userData);
+        });
         
     }
 
