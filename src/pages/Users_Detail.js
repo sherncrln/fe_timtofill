@@ -8,27 +8,24 @@ export default function UsersDetail() {
     const navigate = useNavigate();
     const [userData, setUserData] = useState([]);
     const {id} = useParams();
-    //console.log(id);
-
-    const handleChange = (event) => {
-        const name = event.target.name;
-        const value = event.target.value;
-        setUserData(values => ({...values, [name]: value}));
-    }
-
+    
     useEffect( () => {
         getUserData();
-        //console.log(userData[id]);
-      }, []);
+    }, []);
     
     function getUserData(){
-        axios.get(`http://localhost/timetofill/users.php`, id).then(function(response){
+        axios.get(`http://localhost/timetofill/users.php/${id}`, userData).then(function(response){
             setUserData(response.data);
-            console.log(userData);
         });
         
     }
-
+    
+        const handleChange = (event) => {
+            const name = event.target.name;
+            const value = event.target.value;
+            setUserData(values => ({...values, [name]: value}));
+        }
+    
     const handleSubmit = (event)=>{
         event.preventDefault();
 
@@ -42,7 +39,7 @@ export default function UsersDetail() {
     <>
       <div>
         <NavBar />
-        <p className="text-5xl text-blue-800 text-center tracking-widest mt-14 mb-6">Profile</p>
+        <p className="text-5xl text-blue-800 text-center tracking-widest mt-14 mb-6">User Detail</p>
         <div className="flex items-center justify-center">
           <form>
             <div className= "w-80 mb-2">
@@ -56,7 +53,8 @@ export default function UsersDetail() {
                     id="username"
                     name="username"
                     placeholder=""
-                    value={logged_data['username']}
+                    value={userData.username}
+                    onChange={handleChange}
                 />
             </div>
             <div className= "w-80 mb-2">
@@ -70,7 +68,8 @@ export default function UsersDetail() {
                     id="name"
                     name="name"
                     placeholder=""
-                    value={logged_data['name']}
+                    value={userData.name}
+                    onChange={handleChange}
                 />
             </div>
             <div className= "w-80 mb-2">
@@ -84,7 +83,8 @@ export default function UsersDetail() {
                     id="category"
                     name="category"
                     placeholder=""
-                    value={logged_data['category']}
+                    value={userData.category}
+                    onChange={handleChange}
                 />
             </div>
             <div className= "w-80 mb-2">
@@ -98,7 +98,8 @@ export default function UsersDetail() {
                     id="class"
                     name="class"
                     placeholder=""
-                    value={logged_data['class']}
+                    value={userData.class}
+                    onChange={handleChange}
                 />
             </div>
             <div className= "w-80 mb-2">
@@ -112,7 +113,8 @@ export default function UsersDetail() {
                     id="email"
                     name="email"
                     placeholder=""
-                    value={logged_data['email']}
+                    value={userData.email}
+                    onChange={handleChange}
                 />
             </div>
             <div className= "w-80 mb-6">
@@ -121,12 +123,13 @@ export default function UsersDetail() {
                     Status
                 </label>
                 <input
-                    type="password"
+                    type="text"
                     className="w-80 h-10 px-4 peer py-2 text-blue-900 bg-transparent border border-blue-950 rounded"
-                    id="password"
-                    name="password"
+                    id="status_user"
+                    name="status_user"
                     placeholder=""
-                    value={logged_data['password']}
+                    value={userData.status_user}
+                    onChange={handleChange}
                 />
             </div>
             <div className= " mb-2 px-4 tracking-widest text-[#f8fafc]">
@@ -137,5 +140,5 @@ export default function UsersDetail() {
         </div>
       </div>
     </>
-  );
+);
 }
