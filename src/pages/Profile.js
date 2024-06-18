@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import NavBar from "../components/NavBar";
 import axios from "axios";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 export default function Profile() {
     const navigate = useNavigate();
@@ -44,6 +44,7 @@ export default function Profile() {
             .then(function(response){
                 console.log(response.data);
                 setUserData(response.data);
+                navigate('/home');
             })
             .catch(function(error){
                 console.error("There was an error!", error);
