@@ -1,6 +1,6 @@
 import {useEffect, useState} from "react";
 import NavBar from "../components/NavBar";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams  } from "react-router-dom";
 import axios from "axios";
 
 export default function UsersDetail() {
@@ -8,6 +8,10 @@ export default function UsersDetail() {
     const navigate = useNavigate();
     const [userData, setUserData] = useState([]);
     const {id} = useParams();
+
+    const backToUsersPage = () => {
+        navigate('/users');
+    };
     
     useEffect( () => {
         getUserData();
@@ -28,11 +32,15 @@ export default function UsersDetail() {
     
     const handleSubmit = (event)=>{
         event.preventDefault();
-
-        // axios.put(`http://localhost/timetofill/profile.php`, userData).then(function(response) {
-        //     console.log(response.data);
-        //     navigate('/');
-        // });
+        axios.put(`http://localhost/timetofill/users.php/${id}`, JSON.stringify(userData))
+            .then(function(response){
+                console.log(response.data);
+                setUserData(response.data);
+                backToUsersPage();
+            })
+            .catch(function(error){
+                console.error("There was an error!", error);
+            });
     }
 
   return (
@@ -41,7 +49,7 @@ export default function UsersDetail() {
         <NavBar />
         <p className="text-5xl text-blue-800 text-center tracking-widest mt-14 mb-6">User Detail</p>
         <div className="flex items-center justify-center">
-          <form>
+          <form onSubmit={handleSubmit}>
             <div className= "w-80 mb-2">
                 <label
                     className="text-sm text-blue-950 text-bold font-semibold">
@@ -122,19 +130,19 @@ export default function UsersDetail() {
                     className="text-sm text-blue-950 text-bold font-semibold">
                     Status
                 </label>
-                <input
-                    type="text"
+                <select 
+                    id="status_user" 
+                    name="status_user" 
                     className="w-80 h-10 px-4 peer py-2 text-blue-900 bg-transparent border border-blue-950 rounded"
-                    id="status_user"
-                    name="status_user"
-                    placeholder=""
                     value={userData.status_user}
-                    onChange={handleChange}
-                />
+                    onChange={handleChange}>
+                    <option value="Active">Active</option>
+                    <option value="Non Active">Non Active</option>
+                </select>
             </div>
             <div className= " mb-2 px-4 tracking-widest text-[#f8fafc]">
                 <button className="w-32 h-8 rounded bg-[#577BC1] mr-6 ">Save</button>
-                <button  className="w-32 h-8 rounded bg-[#577BC1] ">Back</button>
+                <button onClick={backToUsersPage} className="w-32 h-8 rounded bg-[#577BC1] ">Back</button>
             </div>
           </form>
         </div>
