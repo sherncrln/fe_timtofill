@@ -30,7 +30,7 @@ export default function UsersList() {
           </div>
       </div>
       <div className="flex items-center w-screen px-20 ">
-        <table className="w-full align-middle table-auto tracking-widest">
+        <table className="w-full align-middle table-auto tracking-widest text-center">
           <thead className="h-12 bg-[#577BC1] text-[#f8fafc] font-normal">
             <tr>
               <th scope="col" className="w-12" >#</th>

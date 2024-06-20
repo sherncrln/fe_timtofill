@@ -10,7 +10,6 @@ import UsersList from './pages/UsersList';
 import UsersDetail from './pages/UsersDetail';
 import ClassList from './pages/ClassList';
 import ClassDetail from './pages/ClassDetail';
-// import { AuthProvider } from './components/AuthContext';
 
 function App() {
   return (

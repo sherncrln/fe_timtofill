@@ -4,7 +4,6 @@ import { useNavigate, useParams  } from "react-router-dom";
 import axios from "axios";
 
 export default function UsersDetail() {
-    const logged_data = JSON.parse(localStorage.getItem("logged_data"));
     const navigate = useNavigate();
     const [userData, setUserData] = useState([]);
     const {id} = useParams();
@@ -24,17 +23,16 @@ export default function UsersDetail() {
         
     }
     
-        const handleChange = (event) => {
-            const name = event.target.name;
-            const value = event.target.value;
-            setUserData(values => ({...values, [name]: value}));
-        }
+    const handleChange = (event) => {
+        const name = event.target.name;
+        const value = event.target.value;
+        setUserData(values => ({...values, [name]: value}));
+    }
     
     const handleSubmit = (event)=>{
         event.preventDefault();
         axios.put(`http://localhost/timetofill/users.php/${id}`, JSON.stringify(userData))
             .then(function(response){
-                console.log(response.data);
                 setUserData(response.data);
                 backToUsersPage();
             })

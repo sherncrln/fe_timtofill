@@ -6,21 +6,22 @@ import axios from "axios";
 export default function ClassList() {
   const [classData, setclassData] = useState([]);
   const navigate = useNavigate();
-  const status_class = "";
-  const dateNow = new Date();
 
   useEffect( () => {
     getclassData();
-    console.log();
   }, []);
 
   function getclassData(){
-    // axios.get('http://localhost/timetofill/class.php').then(function(response){
-    //     setclassData(response.data);
-        
-    // });
-    
-}
+    axios.get('http://localhost/timetofill/class.php').then(function(response){
+        setclassData(response.data);
+  });
+  }
+  
+  function getStatus(valid_to) {
+    const today = new Date();
+    const validToDate = new Date(valid_to);
+    return validToDate >= today ? "Active" : "Non Active";
+  }
 
   return (
     <>
@@ -34,7 +35,7 @@ export default function ClassList() {
           </div>
       </div>
       <div className="flex items-center w-screen px-20 ">
-        <table className="w-full align-middle table-auto tracking-widest">
+        <table className="w-full align-middle table-auto tracking-widest text-center">
           <thead className="h-12 bg-[#577BC1] text-[#f8fafc] font-normal">
             <tr>
               <th scope="col" className="w-12" >#</th>
@@ -53,9 +54,9 @@ export default function ClassList() {
                 <td>{classData.class}</td>
                 <td>{classData.category}</td>
                 <td>{classData.semester}</td>
-                <td>{classData.status_user}</td>
+                <td>{getStatus(classData.valid_to)}</td>
                 <td>
-                  <Link to={`./${classData.class_id}/edit`} style={{marginRight: "10px"}}>Edit</Link>
+                  <Link to={`/class/${classData.class_id}/edit`} style={{ marginRight: "10px" }}>Edit</Link>
                 </td>
               </tr>
               ))
