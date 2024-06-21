@@ -35,9 +35,18 @@ export default function FormList() {
     }, []);
   
     function getFormList(){
-        axios.get('http://localhost/timetofill/form.php').then(function(response){
-            setFormList(response.data);
-      });
+        axios.get('http://localhost/timetofill/form.php')
+        .then(function(response) {
+            let filteredForms = response.data;
+            if (logged_data['category'] === "Mahasiswa") {
+                filteredForms = filteredForms.filter(form => form.respondent === "Mahasiswa" || form.respondent === "Semua");
+            } else if (logged_data['category'] === "Dosen") {
+                filteredForms = filteredForms.filter(form => form.respondent === "Dosen" || form.respondent === "Semua");
+            } else if (logged_data['category'] === "Staff") {
+                filteredForms = filteredForms.filter(form => form.respondent === "Staff" || form.respondent === "Semua");
+            }
+            setFormList(filteredForms);
+        });
       
   }
 
