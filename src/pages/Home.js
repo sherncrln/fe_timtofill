@@ -1,6 +1,7 @@
 import React from "react";
 // import { Navigate } from "react-router-dom";
 import NavBar from "../components/NavBar";
+import FormList from "./FormList";
 
 export default function Home() {
   const hometext ="";
@@ -9,13 +10,14 @@ export default function Home() {
 
   return (
     <>
-      <div className="">
+      <div className="w-screen">
         <NavBar />
         <div className="px-16">
           {logged_data ? ( 
             logged_data['category'] === "Admin" ?(
             <>
               <p className="w-full text-3xl text-blue-800 font-semibold tracking-widest mt-14 mb-6"> Craft your dream website effortlessly! Build your online presence with our intuitive form builder - no coding required. </p>
+              <button className="w-32 h-10 rounded bg-[#577BC1] tracking-widest text-[#f8fafc]">Add Form</button>
             </>
             ): logged_data['category'] === "Dosen" ? (
             <>
@@ -31,7 +33,7 @@ export default function Home() {
             ): null
           ): null}
           <div className="w-full">
-
+            <FormList />
           </div>
         </div>
       </div>

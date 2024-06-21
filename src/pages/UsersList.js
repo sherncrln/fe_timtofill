@@ -23,11 +23,19 @@ export default function UsersList() {
       <div>
       <NavBar />
       <div className="flex items-center justify-between w-screen px-20 my-10">
-          <p className="w-full text-3xl text-blue-800 font-semibold tracking-widest"> List User</p>
-          <div className="w-80 flex items-center gap-x-4 py-1 justify-end">
-            <button onClick={() => {navigate('/class')}} className="w-32 h-8 rounded bg-[#577BC1] tracking-widest text-sm text-[#f8fafc]">Class</button>
-            <button className="w-32 h-8 rounded bg-[#577BC1] tracking-widest text-sm  text-[#f8fafc]">Upload User</button>
+        <p className="w-1/3 text-3xl text-blue-800 font-semibold tracking-widest"> List Users</p>
+        <div className=" w-2/3 flex justify-end items-center gap-x-4 py-1 justify-end">
+          <div className="flex-row">
+            <input className="text-blue-900 bg-transparent " type="file"  />
+            <select  
+              className="px-2 mx-2 text-blue-900 bg-transparent " >
+              <option selected="selected" value="add">Add</option>
+              <option value="edit">Edit</option>
+            </select>
+            <button className="w-32 h-8 rounded bg-[#577BC1] tracking-widest text-sm  text-[#f8fafc]">Upload Users</button>
           </div>
+          <button onClick={() => {navigate('/class')}} className="w-32 h-8 rounded bg-[#577BC1] tracking-widest text-sm text-[#f8fafc]">Class</button>
+        </div>
       </div>
       <div className="flex items-center w-screen px-20 ">
         <table className="w-full align-middle table-auto tracking-widest text-center">
