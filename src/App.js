@@ -10,6 +10,8 @@ import UsersList from './pages/UsersList';
 import UsersDetail from './pages/UsersDetail';
 import ClassList from './pages/ClassList';
 import ClassDetail from './pages/ClassDetail';
+import FormEdit from './pages/FormEdit';
+import FormCreate from './pages/FormCreate';
 
 function App() {
   return (
@@ -25,6 +27,8 @@ function App() {
             <Route path="/response" element={<Protected Component={Response} />} />
             <Route path="/class" element={<Protected Component={ClassList} />} />
             <Route path="/class/:id/edit" element={<Protected Component={ClassDetail} />} />
+            <Route path="/form" element={<Protected Component={FormCreate} />} />
+            {/* <Route path="/form/:id/edit" element={<Protected Component={FormEdit} />} /> */}
           </Routes>
       </Router>
     </div>

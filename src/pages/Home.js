@@ -1,12 +1,11 @@
 import React from "react";
-// import { Navigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import NavBar from "../components/NavBar";
 import FormList from "./FormList";
 
 export default function Home() {
-  const hometext ="";
   const logged_data = JSON.parse(localStorage.getItem("logged_data"));
-  
+  const navigate = useNavigate();
 
   return (
     <>
@@ -17,7 +16,7 @@ export default function Home() {
             logged_data['category'] === "Admin" ?(
             <>
               <p className="w-full text-3xl text-blue-800 font-semibold tracking-widest mt-14 mb-6"> Craft your dream website effortlessly! Build your online presence with our intuitive form builder - no coding required. </p>
-              <button className="w-32 h-10 rounded bg-[#577BC1] tracking-widest text-[#f8fafc]">Add Form</button>
+              <button onClick={() => {navigate('/form')}} className="w-32 h-10 rounded bg-[#577BC1] tracking-widest text-[#f8fafc]">Add Form</button>
             </>
             ): logged_data['category'] === "Dosen" ? (
             <>

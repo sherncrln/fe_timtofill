@@ -31,7 +31,6 @@ export default function FormList() {
   
     useEffect( () => {
         getFormList();
-        console.log(formList);
     }, []);
   
     function getFormList(){
