@@ -164,6 +164,8 @@ export default function FormCreate() {
 }
 
 function Question({ index, question, qtype, handleQuestionChange, handleQTypeChange, deleteQuestion }) {
+
+
     return (
         <div className="mb-4">
             <div className="w-full flex row bg-blue-200 rounded-t-md">
@@ -172,14 +174,14 @@ function Question({ index, question, qtype, handleQuestionChange, handleQTypeCha
                     id={`question_header_${index}`}
                     name={`question_header_${index}`}
                     placeholder="Header"
-                    className="w-3/5 pl-8 py-2 text-lg text-blue-800 font-semibold tracking-widest bg-transparent" 
+                    className="w-3/5 pl-8 py-2 text-lg text-blue-800 font-semibold tracking-widest bg-blue-200" 
                     value={question}
                     onChange={(e) => handleQuestionChange(index, e.target.value)}
                 />
                 <select  
                     id={`qtype_${index}`}
                     name={`qtype_${index}`}
-                    className="w-1/5 px-2 py-1 mr-44 text-grey-200 text-blue-800 font-semibold tracking-widest bg-transparent" 
+                    className="w-1/5 px-2 py-1 mr-44 text-grey-200 text-blue-800 font-semibold tracking-widest bg-blue-200" 
                     value={qtype}
                     onChange={(e) => handleQTypeChange(index, e.target.value)}
                 >
@@ -197,14 +199,75 @@ function Question({ index, question, qtype, handleQuestionChange, handleQTypeCha
                     onClick={() => deleteQuestion(index)}
                 />
             </div>
-            <div className="w-full flex row bg-[#f8fafc] rounded-b-md shadow-sm ">
-                <input 
+            <div className="w-full flex row py-2 px-8 bg-[#f8fafc] rounded-b-md shadow-sm ">
+                {qtype ? ( 
+                    qtype === "text" ?(
+                    <>
+                        <input disabled
+                            type="text" 
+                            id="answer"
+                            name="answer"
+                            placeholder="Answer"
+                            className="w-full px-4 py-2 text-sm text-blue-800 font-semibold bg-slate-300" 
+                        />
+                    </>
+                    ): qtype === "dropdown" ? (
+                    <>
+                        <input 
+                            type="text" 
+                            id={`question_text_${index}`}
+                            name={`question_text_${index}`}
+                            placeholder="Question"
+                            className="w-2/5 pl-8 py-2 text-sm text-blue-800 font-semibold bg-transparent" 
+                        />
+                        <input disabled
+                            type="text" 
+                            id="answer"
+                            name="answer"
+                            placeholder="Dropdown"
+                            className="w-3/5 pr-8 py-2 text-sm text-blue-800 font-semibold bg-slate-300" 
+                        />
+                    </>
+                    ): qtype === "date" ? (
+                    <>
+                        <input disabled
+                            type="date" 
+                            id="answer"
+                            name="answer"
+                            className="w-full px-4 py-2 text-sm text-blue-800 font-semibold bg-slate-300" 
+                        />
+                    </>
+                    ): <>
+                        <input disabled
+                            type="text" 
+                            placeholder="Choose Question Type"
+                            className="w-2/5 pl-8 py-2 text-sm text-blue-800 font-semibold bg-transparent" 
+                        />
+                        <input disabled
+                            type="text" 
+                            placeholder="null1"
+                            className="w-3/5 pr-8 py-2 text-sm text-blue-800 font-semibold bg-slate-300" 
+                        />
+                    </>
+                ): <>
+                    <input disabled
+                        type="text" 
+                        placeholder="Choose Question Type"
+                        className="w-2/5 pl-8 py-2 text-sm text-blue-800 font-semibold bg-transparent" 
+                    />
+                    <input disabled
+                        type="text" 
+                        placeholder="null2"
+                        className="w-3/5 pr-8 py-2 text-sm text-blue-800 font-semibold bg-slate-300" 
+                    />
+                </>}
+                {/* <input 
                     type="text" 
                     id={`question_text_${index}`}
                     name={`question_text_${index}`}
                     placeholder="Question"
                     className="w-3/5 pl-8 py-2 text-sm text-blue-800 font-semibold bg-transparent" 
-                />
+                /> */}
             </div>
         </div>
     );
