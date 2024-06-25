@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import NavBar from "../components/NavBar";
 import deleteQ from "../assets/deleteform.png";
@@ -12,9 +12,25 @@ export default function FormCreate() {
         show_username: "",
         respondent: "",
         description: "",
-        question: [],
-        qtype: [],
+        question: [{ header: "", text: [] }],
+        qtype: [{ type: "", detail: [] }],
     });
+
+    useEffect(() => {
+        if (formDetail.respondent) {
+            setFormDetail(prevState => {
+                const newQtypes = prevState.qtype.map((qtype    ) => {
+                    if (qtype.type === "multi-text" || qtype.type === "multi-rating") {
+                        const newDetail = formDetail.respondent === "Mahasiswa" ? "Variable" : "Class";
+                        return { ...qtype, detail: [newDetail] };
+                    }
+                    return qtype;
+                });
+                return { ...prevState, qtype: newQtypes };
+            });
+        }
+    }, [formDetail.respondent]);
+    
 
     const handleChange = (event) => {
         setError("");
@@ -37,8 +53,8 @@ export default function FormCreate() {
     const addQuestion = () => {
         setFormDetail(prevState => ({
             ...prevState,
-            question: [...prevState.question, ""],
-            qtype: [...prevState.qtype, ""]
+            question: [...prevState.question, { header: "", text: [] }],
+            qtype: [...prevState.qtype, { type: "", detail: [] }]
         }));
     };
 
@@ -60,9 +76,42 @@ export default function FormCreate() {
         setFormDetail({ ...formDetail, question: newQuestions, qtype: newQTypes });
     };
 
+    const addOption = (index) => {
+        setFormDetail(prevState => {
+            const newQtypes = [...prevState.qtype];
+    
+            // Periksa apakah qtype[index] adalah objek dengan properti detail
+            if (typeof newQtypes[index] === 'string') {
+                newQtypes[index] = { type: newQtypes[index], detail: [""] };
+            } else if (Array.isArray(newQtypes[index].detail)) {
+                newQtypes[index].detail.push("");
+            }
+    
+            // Return the new state
+            return { ...prevState, qtype: newQtypes };
+        });
+    };
+    
+    
+    const handleOptionChange = (index, optionIndex, value) => {
+        setFormDetail(prevState => {
+            const newQtypes = [...prevState.qtype];
+            newQtypes[index].detail[optionIndex] = value;
+            return { ...prevState, qtype: newQtypes };
+        });
+    };
+    
+    const deleteOption = (index, optionIndex) => {
+        setFormDetail(prevState => {
+            const newQtypes = [...prevState.qtype];
+            newQtypes[index].detail = newQtypes[index].detail.filter((_, i) => i !== optionIndex);
+            return { ...prevState, qtype: newQtypes };
+        });
+    };
+
     return (
         <>
-            <div className="w-screen h-auto">
+            <div className="w-screen h-full bg-blue-100">
                 <NavBar />
                 <div className="flex flex-col">
                     <form onSubmit={handleSubmit}>
@@ -72,7 +121,7 @@ export default function FormCreate() {
                                 id="name_form"
                                 name="name_form"
                                 placeholder="Input Form Name"
-                                className="w-3/4 h-12 py-4 text-3xl text-blue-800 font-semibold tracking-widest bg-transparent text-wrap focus:bg-blue-100" 
+                                className="w-3/4 h-12 py-4 text-3xl text-blue-800 font-semibold tracking-widest bg-transparent text-wrap" 
                                 onChange={handleChange}
                             /> 
                             <div className=" w-max-w-72 flex items-center gap-x-4 py-1 justify-end">
@@ -89,7 +138,7 @@ export default function FormCreate() {
                                 <select  
                                     id="status_form"
                                     name="status_form"
-                                    className="px-2 py-1 text-grey-200 bg-blue-200 rounded-r-md" 
+                                    className="px-2 py-1 text-grey-200 bg-blue-200 rounded-r-md cursor-pointer" 
                                     onChange={handleChange}
                                 >
                                     <option value="">Set Status</option>
@@ -104,7 +153,7 @@ export default function FormCreate() {
                                 <select  
                                     id="show_username"
                                     name="show_username"
-                                    className="px-2 py-1 text-grey-200 bg-blue-200 rounded-r-md" 
+                                    className="px-2 py-1 text-grey-200 bg-blue-200 rounded-r-md cursor-pointer" 
                                     onChange={handleChange}
                                 >
                                     <option value="">Set Result</option>
@@ -119,7 +168,7 @@ export default function FormCreate() {
                                 <select  
                                     id="respondent"
                                     name="respondent"
-                                    className="px-2 py-1 text-grey-200 bg-blue-200 rounded-r-md" 
+                                    className="px-2 py-1 text-grey-200 bg-blue-200 rounded-r-md cursor-pointer" 
                                     onChange={handleChange}
                                 >
                                     <option value="">Choose Respondent</option>
@@ -150,6 +199,9 @@ export default function FormCreate() {
                                     handleQuestionChange={handleQuestionChange}
                                     handleQTypeChange={handleQTypeChange}
                                     deleteQuestion={deleteQuestion}
+                                    addOption={addOption} 
+                                    deleteOption={deleteOption}
+                                    handleOptionChange={handleOptionChange}
                                 />
                             ))}
                         </div>
@@ -163,32 +215,32 @@ export default function FormCreate() {
     );
 }
 
-function Question({ index, question, qtype, handleQuestionChange, handleQTypeChange, deleteQuestion }) {
-
+function Question({ index, question, qtype, handleQuestionChange, handleQTypeChange, handleOptionChange, addOption, deleteOption, deleteQuestion }) {
+    console.log(qtype);
 
     return (
         <div className="mb-4">
             <div className="w-full flex row bg-blue-200 rounded-t-md">
                 <input 
                     type="text" 
-                    id={`question_header_${index}`}
-                    name={`question_header_${index}`}
                     placeholder="Header"
                     className="w-3/5 pl-8 py-2 text-lg text-blue-800 font-semibold tracking-widest bg-blue-200" 
-                    value={question}
-                    onChange={(e) => handleQuestionChange(index, e.target.value)}
+                    value={question.header}
+                    onChange={(e) => handleQuestionChange(index, e.target.value, "header")}
                 />
                 <select  
                     id={`qtype_${index}`}
                     name={`qtype_${index}`}
-                    className="w-1/5 px-2 py-1 mr-44 text-grey-200 text-blue-800 font-semibold tracking-widest bg-blue-200" 
-                    value={qtype}
+                    className="w-1/5 px-2 py-1 mr-44 text-grey-200 text-blue-800 font-semibold tracking-widest bg-blue-200 cursor-pointer" 
+                    value={qtype.type}
                     onChange={(e) => handleQTypeChange(index, e.target.value)}
                 >
                     <option value="">Choose Question Type</option>
                     <option value="text">Text</option>
-                    <option value="dropdown">Dropdown</option>
                     <option value="date">Date</option>
+                    <option value="dropdown">Dropdown</option>
+                    <option value="check">Check Box</option>
+                    <option value="radio">Radio Button</option>
                     <option value="multi-text">Multi-Text</option>
                     <option value="multi-rating">Multi-Rating</option>
                 </select>
@@ -208,24 +260,7 @@ function Question({ index, question, qtype, handleQuestionChange, handleQTypeCha
                             id="answer"
                             name="answer"
                             placeholder="Answer"
-                            className="w-full px-4 py-2 text-sm text-blue-800 font-semibold bg-slate-300" 
-                        />
-                    </>
-                    ): qtype === "dropdown" ? (
-                    <>
-                        <input 
-                            type="text" 
-                            id={`question_text_${index}`}
-                            name={`question_text_${index}`}
-                            placeholder="Question"
-                            className="w-2/5 pl-8 py-2 text-sm text-blue-800 font-semibold bg-transparent" 
-                        />
-                        <input disabled
-                            type="text" 
-                            id="answer"
-                            name="answer"
-                            placeholder="Dropdown"
-                            className="w-3/5 pr-8 py-2 text-sm text-blue-800 font-semibold bg-slate-300" 
+                            className="w-full px-4 py-2 text-md text-blue-800 font-semibold bg-slate-300" 
                         />
                     </>
                     ): qtype === "date" ? (
@@ -234,40 +269,88 @@ function Question({ index, question, qtype, handleQuestionChange, handleQTypeCha
                             type="date" 
                             id="answer"
                             name="answer"
-                            className="w-full px-4 py-2 text-sm text-blue-800 font-semibold bg-slate-300" 
+                            className="w-full px-4 py-2 text-md text-blue-800 font-semibold bg-slate-300" 
                         />
                     </>
-                    ): <>
+                    ): qtype === "radio" ? (
+                    <>
+                        <input
+                            type="radio" 
+                            id="answer"
+                            name="answer"
+                            className="w-full px-4 py-2 text-md text-blue-800 font-semibold bg-slate-300" 
+                        />
+                    </>
+                    ): qtype === "check" ? (
+                    <>
+                        <input
+                            type="checkbox" 
+                            id="answer"
+                            name="answer"
+                            className="w-full px-4 py-2 text-md text-blue-800 font-semibold bg-slate-300" 
+                        />
+                    </>
+                    ): qtype === "dropdown" ? (
+                    <>
+                        {qtype.detail && qtype.detail.map((option, optIndex) => (
+                                <div key={optIndex} className="flex items-center">
+                                    <input 
+                                        type="text" 
+                                        placeholder="Option" 
+                                        className="w-4/5 pl-8 py-2 text-sm text-blue-800 font-semibold bg-transparent" 
+                                        value={option}
+                                        onChange={(e) => handleOptionChange(index, optIndex, e.target.value)}
+                                    />
+                                    <button type="button" onClick={() => deleteOption(index, optIndex)} className="w-1/5 py-2 text-md text-red-800 font-semibold">(X)</button>
+                                </div>
+                            ))}
+                            <button type="button" onClick={() => addOption(index)} className="w-full py-2 text-md text-blue-800 font-semibold">+ Add Option</button>
+                    </>
+                    ) : qtype === "multi-text" ? (
+                        <>
+                            <select  
+                                id="answer"
+                                name="answer"
+                                className="w-full px-4 py-2 text-md text-blue-800 font-semibold bg-transparent cursor-pointer"
+                            >
+                                <option value="">Choose Parameter</option>
+                                <option value="variable">Variable</option>
+                                <option value="class">Class</option>
+                            </select>
+                        </>
+                    ) : qtype === "multi-rating" ? (
+                        <>
+                            <input
+                                type="text" 
+                                id={`question_text_${index}`}
+                                name={`question_text_${index}`}
+                                placeholder="Multi-Rating Question"
+                                className="w-2/5 px-4 py-2 text-md text-blue-800 font-semibold bg-transparent" 
+                            />
+                            <select  
+                                id="answer"
+                                name="answer"
+                                className="w-3/5 px-4 py-2 text-md text-blue-800 font-semibold bg-transparent cursor-pointer"
+                            >
+                                <option value="">Choose Parameter</option>
+                                <option value="variable">Variable</option>
+                                <option value="class">Class</option>
+                            </select>
+                        </>
+                    ) : <>
                         <input disabled
                             type="text" 
                             placeholder="Choose Question Type"
-                            className="w-2/5 pl-8 py-2 text-sm text-blue-800 font-semibold bg-transparent" 
-                        />
-                        <input disabled
-                            type="text" 
-                            placeholder="null1"
-                            className="w-3/5 pr-8 py-2 text-sm text-blue-800 font-semibold bg-slate-300" 
+                            className="w-full pl-8 py-2 text-md text-blue-800 font-semibold bg-transparent" 
                         />
                     </>
                 ): <>
                     <input disabled
                         type="text" 
-                        placeholder="Choose Question Type"
-                        className="w-2/5 pl-8 py-2 text-sm text-blue-800 font-semibold bg-transparent" 
-                    />
-                    <input disabled
-                        type="text" 
-                        placeholder="null2"
-                        className="w-3/5 pr-8 py-2 text-sm text-blue-800 font-semibold bg-slate-300" 
+                        placeholder="No Question Type"
+                        className="w-full pl-8 py-2 text-md text-blue-800 font-semibold bg-transparent" 
                     />
                 </>}
-                {/* <input 
-                    type="text" 
-                    id={`question_text_${index}`}
-                    name={`question_text_${index}`}
-                    placeholder="Question"
-                    className="w-3/5 pl-8 py-2 text-sm text-blue-800 font-semibold bg-transparent" 
-                /> */}
             </div>
         </div>
     );
