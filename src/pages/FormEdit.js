@@ -1,25 +1,19 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams  } from "react-router-dom";
 import NavBar from "../components/NavBar";
 import deleteQ from "../assets/deleteform.png";
+import axios from "axios";
 
 export default function FormEdit() {
     const [error, setError] = useState([]);
     const navigate = useNavigate();
-    const [formDetail, setFormDetail] = useState({
-        name_form: "",
-        status_form: "",
-        show_username: "",
-        respondent: "",
-        description: "",
-        question: [{ header: "", text: [] }],
-        qtype: [{ type: "", detail: [] }],
-    });
+    const [formDetail, setFormDetail] = useState({});
+    const {id} = useParams();
 
     useEffect(() => {
         if (formDetail.respondent) {
             setFormDetail(prevState => {
-                const newQtypes = prevState.qtype.map((qtype    ) => {
+                const newQtypes = prevState.qtype.map((qtype, index   ) => {
                     if (qtype.type === "multi-text" || qtype.type === "multi-rating") {
                         const newDetail = formDetail.respondent === "Mahasiswa" ? "Variable" : "Class";
                         return { ...qtype, detail: [newDetail] };
@@ -30,7 +24,14 @@ export default function FormEdit() {
             });
         }
     }, [formDetail.respondent]);
-    
+
+    function getFormData(){
+        axios.get(`http://localhost/timetofill/form.php/${id}`, formDetail).then(function(response){
+            setFormDetail(response.data);
+            console.log(formDetail);
+        });
+        
+    }    
 
     const handleChange = (event) => {
         setError("");
@@ -40,20 +41,27 @@ export default function FormEdit() {
     };
 
     const handleSubmit = (event) => {
-        event.preventDefault();
-        const { name_form, status_form, show_username, respondent, description } = formDetail;
+        // event.preventDefault();
+        // const { name_form, status_form, show_username, respondent, description } = formDetail;
 
-        if (!name_form || !status_form || !show_username || !respondent || !description) {
-            setError("Please fill out all fields.");
-        } else {
-            console.log(formDetail);
-        }
+        // if (!name_form || !status_form || !show_username || !respondent || !description) {
+        //     setError("Please fill out all fields.");
+        // } else {
+        //     axios.post(`http://localhost/timetofill/form.php/`, JSON.stringify(formDetail))
+        //     .then(function(response){
+        //         console.log(response.data);
+        //     })
+        //     .catch(function(error){
+        //         console.error("There was an error!", error);
+        //     });
+        // }
     };
+
 
     const addQuestion = () => {
         setFormDetail(prevState => ({
             ...prevState,
-            question: [...prevState.question, { header: "", text: [] }],
+            question: [...prevState.question, { header: "", sub_quest: [] }],
             qtype: [...prevState.qtype, { type: "", detail: [] }]
         }));
     };
@@ -66,7 +74,7 @@ export default function FormEdit() {
 
     const handleQTypeChange = (index, type) => {
         const newQTypes = [...formDetail.qtype];
-        if(type === "multi-rate" ||type === "multi-text"){
+        if(type === "multi-rating" ||type === "multi-text"){
             if( formDetail.respondent === "Mahasiswa" ||formDetail.respondent === "Dosen"){
                 newQTypes[index] = { ...newQTypes[index], type: type, detail: [] };
             }else{
@@ -110,6 +118,36 @@ export default function FormEdit() {
           const newQtypes = [...prevState.qtype];
           newQtypes[index].detail = newQtypes[index].detail.filter((_, i) => i !== optionIndex);
           return { ...prevState, qtype: newQtypes };
+        });
+      };
+
+      
+    const addQuest = (index) => {
+        console.log('addQuest called for index:', index);
+        setFormDetail(prevState => {
+            const newQuest = [...prevState.question];
+            if (newQuest[index] && Array.isArray(newQuest[index].sub_quest)) {
+                newQuest[index].sub_quest.push("");
+            } else {
+                newQuest[index] = { header: 'multi-rating', sub_quest: [""] };
+            }
+            return { ...prevState, question: newQuest };
+        });
+    };
+    
+      const handleQuestChange = (index, questIndex, value) => {
+        setFormDetail(prevState => {
+          const newQuest = [...prevState.question];
+          newQuest[index].sub_quest[questIndex] = value;
+          return { ...prevState, question: newQuest };
+        });
+      };
+    
+      const deleteQuest = (index, questIndex) => {
+        setFormDetail(prevState => {
+          const newQuest = [...prevState.question];
+          newQuest[index].sub_quest = newQuest[index].sub_quest.filter((_, i) => i !== questIndex);
+          return { ...prevState, question: newQuest };
         });
       };
 
@@ -207,6 +245,9 @@ export default function FormEdit() {
                                     addOption={addOption} 
                                     deleteOption={deleteOption}
                                     handleOptionChange={handleOptionChange}
+                                    addQuest={addQuest} 
+                                    deleteQuest={deleteQuest}
+                                    handleQuestChange={handleQuestChange}
                                 />
                             ))}
                         </div>
@@ -220,8 +261,8 @@ export default function FormEdit() {
     );
 }
 
-function Question({ index, question, qtype, parameter, handleQuestionChange, handleQTypeChange, handleOptionChange, addOption, deleteOption, deleteQuestion }) {
-    const handleInputChange = (e) => {
+function Question({ index, question, qtype, parameter, handleQuestionChange, handleQTypeChange, handleOptionChange, addOption, deleteOption, deleteQuestion, handleQuestChange, addQuest, deleteQuest }) {
+    const handleHeaderChange = (e) => {
         const { name, value } = e.target;
         if (name === 'header') {
             handleQuestionChange(index, { ...question, header: value });
@@ -237,7 +278,7 @@ function Question({ index, question, qtype, parameter, handleQuestionChange, han
                     placeholder="Header"
                     className="w-3/5 pl-8 py-2 text-lg text-blue-800 font-semibold tracking-widest bg-blue-200" 
                     value={question.header}
-                    onChange={handleInputChange}
+                    onChange={handleHeaderChange}
                     name="header"
                 />
                 <select  
@@ -296,7 +337,7 @@ function Question({ index, question, qtype, parameter, handleQuestionChange, han
                                     value={option}
                                     onChange={(e) => handleOptionChange(index, optIndex, e.target.value)}
                                 />
-                                <button type="button" onClick={() => deleteOption(index, optIndex)} className="w-1/5 py-2 text-md text-red-800 font-semibold">(X)</button>
+                                <button type="button" onClick={() => deleteOption(index, optIndex)} className="w-1/5 py-2 text-md text-red-800">Delete</button>
                             </div>
                         ))}
                         </div>
@@ -304,14 +345,9 @@ function Question({ index, question, qtype, parameter, handleQuestionChange, han
                     </>
                     ) : qtype.type === "multi-text" ? (
                         <>
-                            {parameter === "Mahasiswa" && (
-                                <p name="multi-text" className="w-1/4 px-4 py-2 text-md text-blue-800 font-semibold bg-transparent"  >
-                                    Parameter : Variable
-                                </p>
-                            )}
-                            {parameter === "Dosen" && (
-                                <p name="multi-text" className="w-1/4 px-4 py-2 text-md text-blue-800 font-semibold bg-transparent" >
-                                    Parameter : Class
+                            {(parameter === "Mahasiswa" || parameter === "Dosen") && (
+                                <p name="multi-text" className="w-1/4 px-4 py-2 text-md text-gray-600 font-semibold bg-transparent">
+                                    Parameter : {parameter === "Mahasiswa" ? "Variable" : "Class"}
                                 </p>
                             )}
                             <input
@@ -324,22 +360,29 @@ function Question({ index, question, qtype, parameter, handleQuestionChange, han
                         </>
                     ) : qtype.type === "multi-rating" ? (
                         <>
-                            <input
-                                type="text" 
-                                id={`question_text_${index}`}
-                                name={`question_text_${index}`}
-                                placeholder="Multi-Rating Question"
-                                className="w-2/5 px-4 py-2 text-md text-blue-800 font-semibold bg-transparent" 
-                            />
-                            <select  
-                                id="answer"
-                                name="answer"
-                                className="w-3/5 px-4 py-2 text-md text-blue-800 font-semibold bg-transparent cursor-pointer"
-                            >
-                                <option value="">Choose Parameter</option>
-                                <option value="variable">Variable</option>
-                                <option value="class">Class</option>
-                            </select>
+                                <div className="w-7/12 flex flex-col">  
+                                    {question.sub_quest && Array.isArray(question.sub_quest) && question.sub_quest.map((option, optIndex) => (
+                                    <div key={optIndex} className="w-full flex  items-center">
+                                        <input 
+                                            type="text" 
+                                            placeholder="Sub Question" 
+                                            className="w-5/6 pl-8 py-2 text-sm text-blue-800 font-semibold bg-transparent" 
+                                            value={option}
+                                            onChange={(e) => handleQuestChange(index, optIndex, e.target.value)}
+                                        />
+                                        <button type="button" onClick={() => deleteQuest(index, optIndex)} className="w-1/6 py-2 text-md text-red-800">Delete</button>
+                                    </div>
+                                    ))}
+                                </div>
+                                <button type="button" onClick={() => addQuest(index)} className="w-1/12 flex-end items-right w-40 py-2 text-md text-blue-800 font-semibold">+ Add Option</button>
+                                
+                                <div className="w-4/12 flex flex-row justify-center items-center">
+                                    {(parameter === "Mahasiswa" || parameter === "Dosen") && (
+                                        <p name="multi-text" className="px-4 py-2 text-md text-gray-600 font-semibold bg-transparent">
+                                            Parameter : {parameter === "Mahasiswa" ? "Variable" : "Class"}
+                                        </p>
+                                    )}
+                                </div>
                         </>
                     ) : <>
                         <input disabled

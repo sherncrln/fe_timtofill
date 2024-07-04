@@ -70,7 +70,7 @@ export default function FormList() {
                                 {logged_data && logged_data['category'] === "Admin" ? (
                                     <>
                                     <img className="size-10 cursor-pointer" src={deleteform} alt="deleteform" />
-                                    <img className="size-8 cursor-pointer" src={editform} alt="editform" />
+                                    <Link to={`/form/${formList.form_id}/edit`} > <img className="size-8 cursor-pointer" src={editform} alt="editform" /> </Link>
                                     <img className="size-8 cursor-pointer" src={duplicateform} alt="duplicateform" />
                                 </>): 
                                 <>

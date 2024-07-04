@@ -28,7 +28,7 @@ function App() {
             <Route path="/class" element={<Protected Component={ClassList} />} />
             <Route path="/class/:id/edit" element={<Protected Component={ClassDetail} />} />
             <Route path="/form" element={<Protected Component={FormCreate} />} />
-            {/* <Route path="/form/:id/edit" element={<Protected Component={FormEdit} />} /> */}
+            <Route path="/form/:id/edit" element={<Protected Component={FormEdit} />} />
           </Routes>
       </Router>
     </div>

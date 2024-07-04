@@ -61,7 +61,7 @@ export default function UsersList() {
                 <td>{userData.class}</td>
                 <td>{userData.status_user}</td>
                 <td>
-                  <Link to={`./${userData.user_id}/edit`} style={{marginRight: "10px"}}>Edit</Link>
+                  <Link to={`../${userData.user_id}/edit`} style={{marginRight: "10px"}}>Edit</Link>
                 </td>
               </tr>
               ))
