@@ -18,7 +18,7 @@ export default function UsersDetail() {
     
     function getUserData(){
         axios.get(`http://localhost/timetofill/users.php/${id}`, userData).then(function(response){
-            setUserData(response.data);
+            setUserData(response.data); 
         });
         
     }

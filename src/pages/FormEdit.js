@@ -1,155 +1,137 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, useParams  } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import NavBar from "../components/NavBar";
 import deleteQ from "../assets/deleteform.png";
 import axios from "axios";
 
-export default function FormEdit() {
+export default function FormCreate2() {
     const [error, setError] = useState([]);
     const navigate = useNavigate();
-    const [formDetail, setFormDetail] = useState({});
     const {id} = useParams();
+    const [formDetail, setFormDetail] = useState({
+        form_id: id,
+        name_form: "",
+        status_form: "",
+        show_username: "",
+        respondent: "",
+        description: "",
+        question: [],
+        qtype: [],
+    });
+    
+    const backToHomePage = () => {
+        navigate('/home');
+    };
 
-    useEffect(() => {
-        if (formDetail.respondent) {
-            setFormDetail(prevState => {
-                const newQtypes = prevState.qtype.map((qtype, index   ) => {
-                    if (qtype.type === "multi-text" || qtype.type === "multi-rating") {
-                        const newDetail = formDetail.respondent === "Mahasiswa" ? "Variable" : "Class";
-                        return { ...qtype, detail: [newDetail] };
-                    }
-                    return qtype;
-                });
-                return { ...prevState, qtype: newQtypes };
+    useEffect( () => {
+        getFormDetail();
+    }, []);
+    
+    function getFormDetail(){
+        axios.get(`http://localhost/timetofill/form.php?form_id=${id}`, formDetail)
+        .then(function(response) {
+            const { form_id, name_form, respondent, show_username, status_form, description, question, qtype } = response.data;
+            setFormDetail({
+                form_id,
+                name_form,
+                respondent,
+                show_username,
+                status_form,
+                description,
+                question: JSON.parse(question),
+                qtype: JSON.parse(qtype),
             });
-        }
-    }, [formDetail.respondent]);
-
-    function getFormData(){
-        axios.get(`http://localhost/timetofill/form.php/${id}`, formDetail).then(function(response){
-            setFormDetail(response.data);
-            console.log(formDetail);
+        })
+        .catch(function(error) {
+            console.error("Error fetching form details:", error);
         });
-        
-    }    
-
+    }
+    
     const handleChange = (event) => {
         setError("");
         const name = event.target.name;
         const value = event.target.value;
         setFormDetail(values => ({ ...values, [name]: value }));
     };
-
+    
     const handleSubmit = (event) => {
-        // event.preventDefault();
-        // const { name_form, status_form, show_username, respondent, description } = formDetail;
+        event.preventDefault();
+        const { name_form, status_form, show_username, respondent, description } = formDetail;
 
-        // if (!name_form || !status_form || !show_username || !respondent || !description) {
-        //     setError("Please fill out all fields.");
-        // } else {
-        //     axios.post(`http://localhost/timetofill/form.php/`, JSON.stringify(formDetail))
-        //     .then(function(response){
-        //         console.log(response.data);
-        //     })
-        //     .catch(function(error){
-        //         console.error("There was an error!", error);
-        //     });
-        // }
+        
+        if (!name_form || !status_form || !show_username || !respondent || !description) {
+            setError("Please fill out all fields.");
+        } else {
+            axios.put(`http://localhost/timetofill/form.php/${id}`, JSON.stringify(formDetail))
+            .then(function(response){
+                console.log(response.data);                
+                backToHomePage();
+            })
+            .catch(function(error){
+                console.error("There was an error!", error);
+            });
+        }
     };
-
 
     const addQuestion = () => {
         setFormDetail(prevState => ({
             ...prevState,
-            question: [...prevState.question, { header: "", sub_quest: [] }],
-            qtype: [...prevState.qtype, { type: "", detail: [] }]
+            question: [...prevState.question, []],
+            qtype: [...prevState.qtype, []]
         }));
     };
 
     const handleQuestionChange = (index, value) => {
-        const newQuestions = [...formDetail.question];
-        newQuestions[index] = value;
-        setFormDetail({ ...formDetail, question: newQuestions });
+        setFormDetail(prevState => {
+            const newQuestions = [...prevState.question];
+            newQuestions[index][0] = value;
+            return { ...prevState, question: newQuestions };
+        });
+    };
+    
+    const handleQTypeChange = (index, value) => {
+        if (!formDetail.respondent && (value === "multi-text" || value === "multi-rating")) {
+            setError("Please select Respondent before choosing Multi-Text or Multi-Rating.");
+            return;
+        }
+
+        setFormDetail(prevState => {
+            const newQTypes = [...prevState.qtype];
+            newQTypes[index][0] = value;
+            return { ...prevState, qtype: newQTypes };
+        });
     };
 
-    const handleQTypeChange = (index, type) => {
-        const newQTypes = [...formDetail.qtype];
-        if(type === "multi-rating" ||type === "multi-text"){
-            if( formDetail.respondent === "Mahasiswa" ||formDetail.respondent === "Dosen"){
-                newQTypes[index] = { ...newQTypes[index], type: type, detail: [] };
-            }else{
-                setError("For using multi-rate or multi-text, respondent must be 'Mahasiswa' or 'Dosen'");
-            }
-        }else{
-            newQTypes[index] = { ...newQTypes[index], type: type, detail: [] };
-        }
-        setFormDetail({ ...formDetail, qtype: newQTypes });
+    const handleSubQuestionChange = (qIndex, subIndex, value) => {
+        setFormDetail(prevState => {
+            const newSubQuestions = [...prevState.question];
+            newSubQuestions[qIndex][subIndex+1] = value;
+            return { ...prevState, question: newSubQuestions };
+        });
+    };
+
+    const handleSubQtypeChange = (qIndex, subIndex, value) => {
+        setFormDetail(prevState => {
+            const newSubQtypes = [...prevState.qtype];
+            newSubQtypes[qIndex][subIndex+1] = value;
+            return { ...prevState, qtype: newSubQtypes };
+        });
     };
 
     const deleteQuestion = (index) => {
-        const newQuestions = formDetail.question.filter((_, i) => i !== index);
-        const newQTypes = formDetail.qtype.filter((_, i) => i !== index);
-        setFormDetail({ ...formDetail, question: newQuestions, qtype: newQTypes });
+        const newQuestions = [...formDetail.question];
+        const newQTypes = [...formDetail.qtype];
+    
+        newQuestions.splice(index, 1);
+        newQTypes.splice(index, 1);
+    
+        setFormDetail({
+            ...formDetail,
+            question: newQuestions,
+            qtype: newQTypes
+        });
     };
 
-    const addOption = (index) => {
-        console.log('addOption called for index:', index);
-        setFormDetail(prevState => {
-            const newQtypes = [...prevState.qtype];
-            if (newQtypes[index] && Array.isArray(newQtypes[index].detail)) {
-                newQtypes[index].detail.push("");
-            } else {
-                newQtypes[index] = { type: 'dropdown', detail: [""] };
-            }
-            return { ...prevState, qtype: newQtypes };
-        });
-    };
-    
-      const handleOptionChange = (index, optionIndex, value) => {
-        setFormDetail(prevState => {
-          const newQtypes = [...prevState.qtype];
-          newQtypes[index].detail[optionIndex] = value;
-          return { ...prevState, qtype: newQtypes };
-        });
-      };
-    
-      const deleteOption = (index, optionIndex) => {
-        setFormDetail(prevState => {
-          const newQtypes = [...prevState.qtype];
-          newQtypes[index].detail = newQtypes[index].detail.filter((_, i) => i !== optionIndex);
-          return { ...prevState, qtype: newQtypes };
-        });
-      };
-
-      
-    const addQuest = (index) => {
-        console.log('addQuest called for index:', index);
-        setFormDetail(prevState => {
-            const newQuest = [...prevState.question];
-            if (newQuest[index] && Array.isArray(newQuest[index].sub_quest)) {
-                newQuest[index].sub_quest.push("");
-            } else {
-                newQuest[index] = { header: 'multi-rating', sub_quest: [""] };
-            }
-            return { ...prevState, question: newQuest };
-        });
-    };
-    
-      const handleQuestChange = (index, questIndex, value) => {
-        setFormDetail(prevState => {
-          const newQuest = [...prevState.question];
-          newQuest[index].sub_quest[questIndex] = value;
-          return { ...prevState, question: newQuest };
-        });
-      };
-    
-      const deleteQuest = (index, questIndex) => {
-        setFormDetail(prevState => {
-          const newQuest = [...prevState.question];
-          newQuest[index].sub_quest = newQuest[index].sub_quest.filter((_, i) => i !== questIndex);
-          return { ...prevState, question: newQuest };
-        });
-      };
 
     return (
         <>
@@ -165,9 +147,10 @@ export default function FormEdit() {
                                 placeholder="Input Form Name"
                                 className="w-3/4 h-12 py-4 text-3xl text-blue-800 font-semibold tracking-widest bg-transparent text-wrap" 
                                 onChange={handleChange}
+                                value={formDetail.name_form}
                             /> 
                             <div className=" w-max-w-72 flex items-center gap-x-4 py-1 justify-end">
-                                <button onClick={() => navigate('/home')} className="w-32 h-8 rounded bg-[#577BC1] tracking-widest text-sm text-[#f8fafc]">Back</button>
+                                <button onClick={backToHomePage} className="w-32 h-8 rounded bg-[#577BC1] tracking-widest text-sm text-[#f8fafc]">Back</button>
                                 <button type="submit" className="w-32 h-8 rounded bg-[#577BC1] tracking-widest text-sm text-[#f8fafc]">Save</button>
                             </div>
                         </div>
@@ -182,6 +165,7 @@ export default function FormEdit() {
                                     name="status_form"
                                     className="px-2 py-1 text-grey-200 bg-blue-200 rounded-r-md cursor-pointer" 
                                     onChange={handleChange}
+                                    value={formDetail.status_form}
                                 >
                                     <option value="">Set Status</option>
                                     <option value="Active">Active</option>
@@ -197,6 +181,7 @@ export default function FormEdit() {
                                     name="show_username"
                                     className="px-2 py-1 text-grey-200 bg-blue-200 rounded-r-md cursor-pointer" 
                                     onChange={handleChange}
+                                    value={formDetail.show_username}
                                 >
                                     <option value="">Set Result</option>
                                     <option value="Y">Yes</option>
@@ -212,6 +197,7 @@ export default function FormEdit() {
                                     name="respondent"
                                     className="px-2 py-1 text-grey-200 bg-blue-200 rounded-r-md cursor-pointer" 
                                     onChange={handleChange}
+                                    value={formDetail.respondent}
                                 >
                                     <option value="">Choose Respondent</option>
                                     <option value="Semua">Semua</option>
@@ -229,6 +215,7 @@ export default function FormEdit() {
                                 rows="4"
                                 placeholder="Deskripsi formulir"
                                 onChange={handleChange}
+                                value={formDetail.description}
                             ></textarea>
                         </div>
                         <div className="w-screen px-20 py-2 flex flex-col justify-center">
@@ -236,18 +223,14 @@ export default function FormEdit() {
                                 <Question
                                     key={index}
                                     index={index}
-                                    question={q}
-                                    qtype={formDetail.qtype[index]}
+                                    quest={q}
+                                    type={formDetail.qtype}
                                     parameter={formDetail.respondent}
                                     handleQuestionChange={handleQuestionChange}
                                     handleQTypeChange={handleQTypeChange}
                                     deleteQuestion={deleteQuestion}
-                                    addOption={addOption} 
-                                    deleteOption={deleteOption}
-                                    handleOptionChange={handleOptionChange}
-                                    addQuest={addQuest} 
-                                    deleteQuest={deleteQuest}
-                                    handleQuestChange={handleQuestChange}
+                                    handleSubQuestionChange={handleSubQuestionChange}
+                                    handleSubQtypeChange={handleSubQtypeChange}
                                 />
                             ))}
                         </div>
@@ -261,14 +244,43 @@ export default function FormEdit() {
     );
 }
 
-function Question({ index, question, qtype, parameter, handleQuestionChange, handleQTypeChange, handleOptionChange, addOption, deleteOption, deleteQuestion, handleQuestChange, addQuest, deleteQuest }) {
-    const handleHeaderChange = (e) => {
-        const { name, value } = e.target;
-        if (name === 'header') {
-            handleQuestionChange(index, { ...question, header: value });
-        }
+function Question({ index, quest, type, parameter, handleQuestionChange, handleQTypeChange, handleSubQuestionChange, handleSubQtypeChange, deleteQuestion}) {
+    const [subQuestions, setSubQuestions] = useState(quest.slice(1));
+    const [subQtypes, setSubQtypes] = useState(type[index].slice(1));
+
+    const addQuestOption = () => {
+        setSubQuestions([...subQuestions, ""]);
+    };
+
+    const handleSubQuestChange = (subIndex, value) => {
+        handleSubQuestionChange(index, subIndex, value);
+        const newSubQuestions = [...subQuestions];
+        newSubQuestions[subIndex] = value;
+        setSubQuestions(newSubQuestions);
+    };
+
+    const deleteQuestOption = (subIndex) => {
+        const newSubQuestions = subQuestions.filter((_, idx) => idx !== subIndex);
+        setSubQuestions(newSubQuestions);
+        handleSubQuestionChange(index, subIndex, null); 
+    };
+
+    const addTypeOption = () => {
+        setSubQtypes([...subQtypes, ""]);
     };
     
+    const handleSubTypeChange = (subIndex, value) => {
+        handleSubQtypeChange(index, subIndex, value);
+        const newSubQtype = [...subQtypes];
+        newSubQtype[subIndex] = value;
+        setSubQtypes(newSubQtype);
+    };
+
+    const deleteTypeOption = (subIndex) => {
+        const newSubQtype = subQtypes.filter((_, idx) => idx !== subIndex);
+        setSubQtypes(newSubQtype);
+        handleSubQtypeChange(index, subIndex, null); 
+    };
 
     return (
         <div className="mb-4">
@@ -277,15 +289,14 @@ function Question({ index, question, qtype, parameter, handleQuestionChange, han
                     type="text" 
                     placeholder="Header"
                     className="w-3/5 pl-8 py-2 text-lg text-blue-800 font-semibold tracking-widest bg-blue-200" 
-                    value={question.header}
-                    onChange={handleHeaderChange}
-                    name="header"
+                    value={quest[0]}
+                    onChange={(e) => handleQuestionChange(index, e.target.value)}
+                    name="question"
                 />
                 <select  
-                    id={`qtype_${index}`}
-                    name={`qtype_${index}`}
+                    name="type"
                     className="w-1/5 px-2 py-1 mr-44 text-grey-200 text-blue-800 font-semibold tracking-widest bg-blue-200 cursor-pointer" 
-                    value={qtype.type}
+                    value={type[index][0]}
                     onChange={(e) => handleQTypeChange(index, e.target.value)}
                 >
                     <option value="">Choose Question Type</option>
@@ -304,9 +315,9 @@ function Question({ index, question, qtype, parameter, handleQuestionChange, han
                     onClick={() => deleteQuestion(index)}
                 />
             </div>
-            <div className="w-full flex row py-2 px-8 bg-[#f8fafc] rounded-b-md shadow-sm ">
-                {qtype ? ( 
-                    qtype.type === "text" ?(
+            <div className="w-full flex-row py-2 px-8 bg-[#f8fafc] rounded-b-md shadow-sm ">
+                {type[index][0] ? ( 
+                    type[index][0] === "text" ?(
                     <>
                         <input disabled
                             type="text" 
@@ -316,7 +327,7 @@ function Question({ index, question, qtype, parameter, handleQuestionChange, han
                             className="w-full px-4 py-2 text-md text-blue-800 font-semibold bg-slate-300" 
                         />
                     </>
-                    ): qtype.type === "date" ? (
+                    ): type[index][0] === "date" ? (
                     <>
                         <input disabled
                             type="date" 
@@ -325,29 +336,37 @@ function Question({ index, question, qtype, parameter, handleQuestionChange, han
                             className="w-full px-4 py-2 text-md text-blue-800 font-semibold bg-slate-300" 
                         />
                     </>
-                    ): qtype.type === "dropdown" || qtype.type === "check"  || qtype.type === "radio" ? (
+                    ): type[index][0] === "dropdown" || type[index][0] === "check"  || type[index][0] === "radio" ? (
                     <>
-                        <div className="w-full flex-row">
-                        {qtype.detail && Array.isArray(qtype.detail) && qtype.detail.map((option, optIndex) => (
-                            <div key={optIndex} className="w-full flex items-center">
-                                <input 
-                                    type="text" 
-                                    placeholder="Option" 
-                                    className="w-4/5 pl-8 py-2 text-sm text-blue-800 font-semibold bg-transparent" 
-                                    value={option}
-                                    onChange={(e) => handleOptionChange(index, optIndex, e.target.value)}
-                                />
-                                <button type="button" onClick={() => deleteOption(index, optIndex)} className="w-1/5 py-2 text-md text-red-800">Delete</button>
+                        <div>
+                        {subQtypes.map((subType, subIndex) => (
+                            <div className="flex-col">
+                            <input 
+                                key={subIndex}
+                                type="text" 
+                                name={`subType-${subIndex}`}
+                                placeholder={`Sub Type ${subIndex + 1}`}
+                                className="w-11/12 pl-8 py-2 text-md text-blue-800 font-semibold bg-transparent" 
+                                value={subType}
+                                onChange={(e) => handleSubTypeChange(subIndex, e.target.value)}
+                            />
+                            <button
+                                type="button"
+                                className="w-10 ml-2 text-red-500 hover:text-red-700"
+                                onClick={() => deleteTypeOption(subIndex)}
+                            >
+                                Delete
+                            </button>
                             </div>
                         ))}
                         </div>
-                        <button type="button" onClick={() => addOption(index)} className="flex-end items-right w-40 py-2 text-md text-blue-800 font-semibold">+ Add Option</button>
+                        <button type="button" onClick={addTypeOption} className="w-full size-8 text-md px-4 py-2 bg-[#f8fafc] flex items-center justify-center text-[#577BC1] rounded shadow-sm hover:text-blue-400 hover:bg-stone-100">Add Option</button>
                     </>
-                    ) : qtype.type === "multi-text" ? (
-                        <>
+                    ) : type[index][0] === "multi-text" ? (
+                        <div className="flex flex-row">
                             {(parameter === "Mahasiswa" || parameter === "Dosen") && (
                                 <p name="multi-text" className="w-1/4 px-4 py-2 text-md text-gray-600 font-semibold bg-transparent">
-                                    Parameter : {parameter === "Mahasiswa" ? "Variable" : "Class"}
+                                    Parameter : {parameter === "Mahasiswa" ? "Variable" : "Class"}                                    
                                 </p>
                             )}
                             <input
@@ -357,32 +376,38 @@ function Question({ index, question, qtype, parameter, handleQuestionChange, han
                                 name="multi-text"
                                 className="w-3/4 px-4 py-2 text-md text-blue-800 font-semibold bg-slate-300" 
                             />  
-                        </>
-                    ) : qtype.type === "multi-rating" ? (
-                        <>
-                                <div className="w-7/12 flex flex-col">  
-                                    {question.sub_quest && Array.isArray(question.sub_quest) && question.sub_quest.map((option, optIndex) => (
-                                    <div key={optIndex} className="w-full flex  items-center">
-                                        <input 
-                                            type="text" 
-                                            placeholder="Sub Question" 
-                                            className="w-5/6 pl-8 py-2 text-sm text-blue-800 font-semibold bg-transparent" 
-                                            value={option}
-                                            onChange={(e) => handleQuestChange(index, optIndex, e.target.value)}
-                                        />
-                                        <button type="button" onClick={() => deleteQuest(index, optIndex)} className="w-1/6 py-2 text-md text-red-800">Delete</button>
-                                    </div>
-                                    ))}
+                        </div>
+                    ) : type[index][0] === "multi-rating" ? (
+                        <>                        
+                            <div className="justify-center items-center">
+                            {(parameter === "Mahasiswa" || parameter === "Dosen") && (
+                                <p name="multi-text" className="w-1/4 px-4 py-2 text-md text-gray-600 font-semibold bg-transparent">
+                                    Parameter : {parameter === "Mahasiswa" ? "Variable" : "Class"}
+                                    
+                                </p>
+                            )}
+                            {subQuestions.map((subQuestion, subIndex) => (
+                                <div className="flex-col">
+                                <input 
+                                    key={subIndex}
+                                    type="text" 
+                                    name={`subquestion-${subIndex}`}
+                                    placeholder={`Sub Question ${subIndex + 1}`}
+                                    className="w-11/12 pl-8 py-2 text-md text-blue-800 font-semibold bg-transparent" 
+                                    value={subQuestion}
+                                    onChange={(e) => handleSubQuestChange(subIndex, e.target.value)}
+                                />
+                                <button
+                                    type="button"
+                                    className="w-10 ml-2 text-red-500 hover:text-red-700"
+                                    onClick={() => deleteQuestOption(subIndex)}
+                                >
+                                    Delete
+                                </button>
                                 </div>
-                                <button type="button" onClick={() => addQuest(index)} className="w-1/12 flex-end items-right w-40 py-2 text-md text-blue-800 font-semibold">+ Add Option</button>
-                                
-                                <div className="w-4/12 flex flex-row justify-center items-center">
-                                    {(parameter === "Mahasiswa" || parameter === "Dosen") && (
-                                        <p name="multi-text" className="px-4 py-2 text-md text-gray-600 font-semibold bg-transparent">
-                                            Parameter : {parameter === "Mahasiswa" ? "Variable" : "Class"}
-                                        </p>
-                                    )}
-                                </div>
+                            ))}
+                            </div>
+                            <button type="button" onClick={addQuestOption} className="px-4 py-2 w-full size-8 text-md bg-[#f8fafc] flex items-center justify-center text-[#577BC1] rounded shadow-sm hover:text-blue-400 hover:bg-stone-100">Add Sub Question</button>
                         </>
                     ) : <>
                         <input disabled
@@ -398,6 +423,7 @@ function Question({ index, question, qtype, parameter, handleQuestionChange, han
                         className="w-full pl-8 py-2 text-md text-blue-800 font-semibold bg-transparent" 
                     />
                 </>}
+
             </div>
         </div>
     );
