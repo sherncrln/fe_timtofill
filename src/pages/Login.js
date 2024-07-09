@@ -67,7 +67,7 @@ export default function Login() {
 
     return (
         <>
-            <div className="hidden lg:flex h-full w-1/2 items-center justify-center bg-[#577BC1] border-r-[40px] border-indigo-950">
+            <div className="hidden lg:flex min-h-screen h-full w-1/2 items-center justify-center bg-[#577BC1] border-r-[40px] border-indigo-950">
                 <div className="w-full max-w-72 items-center justify-center">
                     <p className="text-6xl text-[#f8fafc] tracking-widest">TimeToFill</p>
                     <img className="size-72" src={Logo} alt="TimeToFill Logo" />

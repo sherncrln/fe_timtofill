@@ -139,7 +139,7 @@ export default function FormList() {
                                     <img className="size-8 cursor-pointer" src={duplicateform} alt="duplicateform" onClick={() => openPopupDuplicate(formList.form_id)} />
                                 </>): 
                                 <>
-                                    <img className="size-8 cursor-pointer" src={openform} alt="openform" />
+                                    <Link to={`/form/${formList.form_id}/open`} ><img className="size-8 cursor-pointer" src={openform} alt="openform" /></Link>
                                 </>
                                 }
                             </div>

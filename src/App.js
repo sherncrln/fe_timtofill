@@ -10,12 +10,13 @@ import UsersList from './pages/UsersList';
 import UsersDetail from './pages/UsersDetail';
 import ClassList from './pages/ClassList';
 import ClassDetail from './pages/ClassDetail';
-import FormEdit from './pages/FormEdit';
 import FormCreate from './pages/FormCreate';
+import FormEdit from './pages/FormEdit';
+import FormOpen from './pages/FormOpen';
 
 function App() {
   return (
-    <div className='flex w-full h-screen'>
+    <div className='flex w-full min-h-screen h-full'>
       <Router>
           <Routes>
             <Route path="/" element={<Login />} />
@@ -29,6 +30,7 @@ function App() {
             <Route path="/class/:id/edit" element={<Protected Component={ClassDetail} />} />
             <Route path="/form" element={<Protected Component={FormCreate} />} />
             <Route path="/form/:id/edit" element={<Protected Component={FormEdit} />} />
+            <Route path="/form/:id/open" element={<Protected Component={FormOpen} />} />
           </Routes>
       </Router>
     </div>
