@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import NavBar from "../components/NavBar";
-import deleteQ from "../assets/deleteform.png";
 import axios from "axios";
-import { logDOM } from "@testing-library/react";
 
 export default function FormOpen() {
     const logged_data = JSON.parse(localStorage.getItem("logged_data"));
@@ -32,6 +30,7 @@ export default function FormOpen() {
 
     useEffect( () => {
         getFormDetail();
+        getParameterDetail(user_id);
     }, []);
     
     function getFormDetail(){
@@ -58,16 +57,20 @@ export default function FormOpen() {
         axios.get(`http://localhost/timetofill/parameter.php?user_id=${user_id}`)
             .then(function (response) {
                 if(logged_data['category'] === "Mahasiswa"){
+                    // console.log(response.data);
                     const valuesArray = Object.values(response.data);
                     setParameterDetail(valuesArray);
                 }else if(logged_data['category'] === "Dosen"){
+                    // console.log(response.data);
                     const classesArray = response.data.classes.split(',').map(item => item.trim());
                     setParameterDetail(classesArray);
                 }
+                
             })
             .catch(function (error) {
                 console.error("Error fetching parameter details:", error);
             });
+        console.log(paramDetail);
     }
     
     const handleChange = (event) => {
@@ -79,7 +82,6 @@ export default function FormOpen() {
     
     const handleSubmit = (event) => {
         event.preventDefault();
-        getParameterDetail(user_id);
         console.log(paramDetail);
         // const { name_form, status_form, show_username, respondent, description } = formDetail;
 
@@ -161,7 +163,7 @@ function Question({ index, quest, type, parameter,handleChange,paramDetail}) {
                             type="text" 
                             id="answer"
                             name={quest[0]}
-                            placeholder="Answer"
+                            placeholder={"Answer"}
                             className="w-full px-4 py-2 text-md font-semibold bg-transparent border-2 border-gray-300" 
                             onChange={handleChange}
                         />
@@ -232,8 +234,8 @@ function Question({ index, quest, type, parameter,handleChange,paramDetail}) {
                             <div className="justify-center items-center">
                                 <div className="flex flex-row py-2">
                                     <div className="w-6/12"></div>
-                                    {(parameter === "Mahasiswa" || parameter === "Dosen") && paramDetail.map((index, p) => (
-                                    <p key={index} name="multi-text" className="w-1/12 text-sm text-center font-semibold "> VariableClass</p>
+                                    {(parameter === "Mahasiswa" || parameter === "Dosen") && paramDetail.map((param, index) => (
+                                    <p key={index} name="multi-text" className="w-1/12 text-sm text-center font-semibold "> {param}</p>
                                     // <p key={index} name="multi-text" className="w-1/12 text-sm text-center font-semibold "> {p} </p>
                                     ))}
                                 </div>
@@ -247,10 +249,10 @@ function Question({ index, quest, type, parameter,handleChange,paramDetail}) {
                                     className="w-6/12 pl-8 py-2 text-sm text-blue-800 font-semibold bg-transparent" 
                                     value={subQuestion || ""}
                                 />
-                                {paramDetail.map((index) => (
+                                {paramDetail.map((param, index) => (
                                     <select
                                         key={index} 
-                                        name={`${quest[0]}`} 
+                                        name={`${param} ${quest[0]}`} 
                                         className="w-auto text-sm ml-1"
                                         onChange={handleChange}>
                                         <option value="">Pilih</option> 
