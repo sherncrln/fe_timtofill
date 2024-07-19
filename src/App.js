@@ -5,7 +5,7 @@ import Protected from './components/Protected';
 import Home from './pages/Home';
 import SignUp from './pages/SignUp';
 import Profile from './pages/Profile';
-import Response from './pages/Response';
+import ResponseList from './pages/ResponseList';
 import UsersList from './pages/UsersList';
 import UsersDetail from './pages/UsersDetail';
 import ClassList from './pages/ClassList';
@@ -25,7 +25,7 @@ function App() {
             <Route path="/profile/:user_id" element={<Protected Component={Profile} />} />
             <Route path="/users" element={<Protected Component={UsersList} />} />
             <Route path="/users/:id/edit" element={<Protected Component={UsersDetail} />} />
-            <Route path="/response" element={<Protected Component={Response} />} />
+            <Route path="/responselist" element={<Protected Component={ResponseList} />} />
             <Route path="/class" element={<Protected Component={ClassList} />} />
             <Route path="/class/:id/edit" element={<Protected Component={ClassDetail} />} />
             <Route path="/form" element={<Protected Component={FormCreate} />} />

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import NavBar from "../components/NavBar";
+import SectionEdit from "../components/SectionEdit";
 import deleteQ from "../assets/deleteform.png";
 import axios from "axios";
 
@@ -8,6 +9,7 @@ export default function FormCreate2() {
     const [error, setError] = useState([]);
     const navigate = useNavigate();
     const {id} = useParams();
+    const [isSectionSetVisible, setIsSectionSetVisible] = useState(false);
     const [formDetail, setFormDetail] = useState({
         form_id: id,
         name_form: "",
@@ -17,6 +19,8 @@ export default function FormCreate2() {
         description: "",
         question: [],
         qtype: [],
+        section : [],
+        section_rule : []
     });
     
     const backToHomePage = () => {
@@ -30,7 +34,7 @@ export default function FormCreate2() {
     function getFormDetail(){
         axios.get(`http://localhost/timetofill/form.php?form_id=${id}`, formDetail)
         .then(function(response) {
-            const { form_id, name_form, respondent, show_username, status_form, description, question, qtype } = response.data;
+            const { form_id, name_form, respondent, show_username, status_form, description, question, qtype, section, section_rule } = response.data;
             setFormDetail({
                 form_id,
                 name_form,
@@ -40,11 +44,14 @@ export default function FormCreate2() {
                 description,
                 question: JSON.parse(question),
                 qtype: JSON.parse(qtype),
+                section: JSON.parse(section),
+                section_rule: JSON.parse(section_rule),
             });
         })
         .catch(function(error) {
             console.error("Error fetching form details:", error);
         });
+
     }
     
     const handleChange = (event) => {
@@ -53,23 +60,46 @@ export default function FormCreate2() {
         const value = event.target.value;
         setFormDetail(values => ({ ...values, [name]: value }));
     };
-    
+
+    const handleSectionSetClose = (newSection, newSectionRule) => {
+        if (newSection && newSectionRule) {
+            setFormDetail(prevState => {
+                const updatedFormDetail = {
+                    ...prevState,
+                    section: newSection,
+                    section_rule: newSectionRule
+                };
+                console.log("Updated formDetail inside setState:", updatedFormDetail);
+                
+                axios.put(`http://localhost/timetofill/form.php/${id}`, JSON.stringify(updatedFormDetail))
+                .then(function(response){
+                    console.log(response.data);                
+                    //backToHomePage();
+                })
+                .catch(function(error){
+                    console.error("There was an error!", error);
+                });
+
+                return updatedFormDetail;
+            });
+
+            console.log(newSection);
+            console.log(newSectionRule);
+            
+            
+        }
+        setIsSectionSetVisible(false);
+    }
+            
     const handleSubmit = (event) => {
         event.preventDefault();
-        const { name_form, status_form, show_username, respondent, description } = formDetail;
+        const { name_form, status_form, show_username, respondent, description, question, qtype } = formDetail;
 
         
-        if (!name_form || !status_form || !show_username || !respondent || !description) {
+        if (!name_form || !status_form || !show_username || !respondent || !description || question.length === 0 || qtype.length === 0) {
             setError("Please fill out all fields.");
         } else {
-            axios.put(`http://localhost/timetofill/form.php/${id}`, JSON.stringify(formDetail))
-            .then(function(response){
-                console.log(response.data);                
-                backToHomePage();
-            })
-            .catch(function(error){
-                console.error("There was an error!", error);
-            });
+            setIsSectionSetVisible(true);
         }
     };
 
@@ -239,6 +269,9 @@ export default function FormCreate2() {
                         </div>
                     </form>
                 </div>
+                {isSectionSetVisible && (
+                    <SectionEdit formDetail={formDetail} onClose={handleSectionSetClose} sec={formDetail.section} secr={formDetail.section_rule} />
+                )}
             </div>
         </>
     );
@@ -340,9 +373,8 @@ function Question({ index, quest, type, parameter, handleQuestionChange, handleQ
                     <>
                         <div>
                         {subQtypes.map((subType, subIndex) => (
-                            <div className="flex-col">
-                            <input 
-                                key={subIndex}
+                            <div key={subIndex} className="flex-col">
+                            <input
                                 type="text" 
                                 name={`subType-${subIndex}`}
                                 placeholder={`Sub Type ${subIndex + 1}`}
@@ -387,9 +419,8 @@ function Question({ index, quest, type, parameter, handleQuestionChange, handleQ
                                 </p>
                             )}
                             {subQuestions.map((subQuestion, subIndex) => (
-                                <div className="flex-col">
+                                <div key={subIndex} className="flex-col">
                                 <input 
-                                    key={subIndex}
                                     type="text" 
                                     name={`subquestion-${subIndex}`}
                                     placeholder={`Sub Question ${subIndex + 1}`}

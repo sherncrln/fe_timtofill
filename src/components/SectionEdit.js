@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 
-export default function SectionSet({ onClose, formDetail }) {
+export default function SectionEdit({ onClose, formDetail, sec, secr }) {
     const [error, setError] = useState("");
-    const [section, setSection] = useState([]);
-    const [sectionRule, setSectionRule] = useState([0]);
+    const [section, setSection] = useState(sec);
+    const [section_rule, setSectionRule] = useState(secr);
     const [layer, setLayer] = useState({
         layer_id: ["1"], // Convert to string
         layerfrom: [""],
@@ -12,6 +12,42 @@ export default function SectionSet({ onClose, formDetail }) {
     });
     const [isPopupOpen, setIsPopupOpen] = useState(false);
     const [currentLayerIndex, setCurrentLayerIndex] = useState(null);
+
+    useEffect( () => {
+        setLayerDefault(section, section_rule);
+        console.log(formDetail);
+    }, []);
+
+
+    const setLayerDefault = (section, section_rule) => {
+        const uniqueLayerIds = [...new Set(section)];
+        const layerFrom = [];
+        const layerTo = [];
+
+        // Mapping section indices to layer_from and layer_to
+        let lastIndex = -1;
+        for (let i = 0; i < section.length; i++) {
+            if (i === 0 || section[i] !== section[i - 1]) {
+                if (lastIndex !== -1) {
+                    layerTo.push(lastIndex);
+                }
+                layerFrom.push(i);
+            }
+            lastIndex = i;
+        }
+        layerTo.push(lastIndex);
+
+        // Setting the layerset from section_rule
+        const layerSet = section_rule;
+
+        setLayer(prevLayer => ({
+            ...prevLayer,
+            layer_id: uniqueLayerIds,
+            layerfrom: layerFrom,
+            layerto: layerTo,
+            layerset: layerSet
+        }));
+    };
 
     const addLayer = () => {
         setLayer(prevLayer => ({
@@ -53,11 +89,13 @@ export default function SectionSet({ onClose, formDetail }) {
     const closePopup = (selectedOptions) => {
         if (selectedOptions) {
             const newLayerset = [...layer.layerset];
-            newLayerset[currentLayerIndex] = selectedOptions.map(String); // Convert to string
+            newLayerset[currentLayerIndex] = selectedOptions.map(String); 
             setLayer(prevLayer => ({ ...prevLayer, layerset: newLayerset }));
         }
         setIsPopupOpen(false);
         setCurrentLayerIndex(null);
+        
+        console.log(layer);
     };
 
     const handleSubmitSection = (event) => {
@@ -81,7 +119,6 @@ export default function SectionSet({ onClose, formDetail }) {
 
             onClose(newSection, newSectionRule);
         }
-
     };
 
     return (
@@ -160,6 +197,8 @@ export default function SectionSet({ onClose, formDetail }) {
                     question={formDetail.question[layer.layerto[currentLayerIndex]]}
                     qtypes={formDetail.qtype[layer.layerto[currentLayerIndex]]}
                     layerIds={layer.layer_id}
+                    layerSet={layer.layerset}
+                    currentLayerIndex = {currentLayerIndex}
                     nextlayer={currentLayerIndex < layer.layer_id.length - 1 ? (currentLayerIndex + 2).toString() : "0"}
                     selectedOptions={layer.layerset[currentLayerIndex]} // Ini mengirim nilai yang disimpan sebelumnya
                 />
@@ -168,9 +207,10 @@ export default function SectionSet({ onClose, formDetail }) {
     );
 }
 
-function NextSectionSettings({ onClose, question, qtypes, layerIds, nextlayer, selectedOptions: initialSelectedOptions }) {
+function NextSectionSettings({ onClose, question, qtypes, layerIds, layerSet, currentLayerIndex, nextlayer, selectedOptions: initialSelectedOptions }) {
     const displayedQtypes = qtypes[0] === 'dropdown' || qtypes[0] === 'radio' ? qtypes.slice(1) : question;
-    const defaultOptions = displayedQtypes.map(() => String(nextlayer)); // Default to nextlayer
+    const x = displayedQtypes.map(() => String(nextlayer));
+    const defaultOptions =  layerSet[currentLayerIndex] ?  layerSet[currentLayerIndex] : displayedQtypes.map(() => String(nextlayer)); // Default to nextlayer
 
     const [selectedOptions, setSelectedOptions] = useState([
         initialSelectedOptions !== '' ? 
@@ -184,6 +224,9 @@ function NextSectionSettings({ onClose, question, qtypes, layerIds, nextlayer, s
         }else{
             setSelectedOptions(defaultOptions.map(String));
         }
+        console.log("LayerSet:",layerSet[currentLayerIndex]);
+        console.log("defaultOptions:",defaultOptions[0]);
+        console.log("nextlayer:",displayedQtypes.map(() => String(nextlayer)));
     }, [initialSelectedOptions]);
 
     const handleChange = (event, index) => {

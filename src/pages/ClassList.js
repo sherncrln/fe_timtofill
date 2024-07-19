@@ -91,7 +91,7 @@ export default function ClassList() {
             <tbody className="align-middle text-blue-900 font-normal">
               {
                 classData.map((classData, index) =>(
-                <tr className="border border-y-slate-600" key={index}>
+                <tr className="border border-y-slate-600 h-8" key={index}>
                   <td>{index+1}</td>
                   <td>{classData.class}</td>
                   <td>{classData.category}</td>

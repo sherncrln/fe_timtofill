@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import NavBar from "../components/NavBar";
+import SectionSet from "../components/SectionSet";
 import deleteQ from "../assets/deleteform.png";
 import axios from "axios";
 
 export default function FormCreate() {
     const [error, setError] = useState([]);
     const navigate = useNavigate();
+    const [isSectionSetVisible, setIsSectionSetVisible] = useState(false);
     const [formDetail, setFormDetail] = useState({
         name_form: "",
         status_form: "",
@@ -15,7 +17,10 @@ export default function FormCreate() {
         description: "",
         question: [],
         qtype: [],
+        section : [],
+        section_rule : []
     });
+
     
     const backToHomePage = () => {
         navigate('/home');
@@ -28,22 +33,45 @@ export default function FormCreate() {
         setFormDetail(values => ({ ...values, [name]: value }));
     };
 
-    const handleSubmit = (event) => {
-        event.preventDefault();
-        const { name_form, status_form, show_username, respondent, description } = formDetail;
+    useEffect(() => {
+        console.log("formDetail updated:", formDetail);
+    }, [formDetail]);
 
-        if (!name_form || !status_form || !show_username || !respondent || !description) {
-            setError("Please fill out all fields.");
-        } else {
-            console.log(formDetail);
+    const handleSectionSetClose = (newSection, newSectionRule) => {
+        if (newSection && newSectionRule) {
+            setFormDetail(prevState => {
+                const updatedFormDetail = {
+                    ...prevState,
+                    section: newSection,
+                    section_rule: newSectionRule
+                };
+                console.log("Updated formDetail inside setState:", updatedFormDetail);
+                return updatedFormDetail;
+            });
+            
+            console.log("newSection:", newSection);
+            console.log("newSectionRule:", newSectionRule);
+
             axios.post(`http://localhost/timetofill/form.php/`, JSON.stringify(formDetail))
-            .then(function(response){
-                console.log(response.data);                
-                backToHomePage();
+            .then(function (response) {
+                console.log(response.data);
+                backToHomePage(); 
             })
-            .catch(function(error){
+            .catch(function (error) {
                 console.error("There was an error!", error);
             });
+        }
+        setIsSectionSetVisible(false);
+    }
+
+    const handleSubmit = (event) => {
+        event.preventDefault();
+        const { name_form, status_form, show_username, respondent, description, question, qtype} = formDetail;
+        
+        if (!name_form || !status_form || !show_username || !respondent || !description || question.length === 0 || qtype.length === 0) {
+            setError("Please fill out all fields.");
+        } else {
+            setIsSectionSetVisible(true);
         }
     };
 
@@ -209,6 +237,9 @@ export default function FormCreate() {
                         </div>
                     </form>
                 </div>
+                {isSectionSetVisible && (
+                    <SectionSet formDetail={formDetail} onClose={handleSectionSetClose} />
+                )}
             </div>
         </>
     );

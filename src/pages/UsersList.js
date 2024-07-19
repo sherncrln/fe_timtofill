@@ -53,7 +53,7 @@ export default function UsersList() {
           <tbody className="align-middle text-blue-900 font-normal">
             {
               userData.map((userData, index) =>(
-              <tr className="border border-y-slate-600" key={index}>
+              <tr className="border border-y-slate-600 h-8" key={index}>
                 <td>{index+1}</td>
                 <td>{userData.username}</td>
                 <td>{userData.name}</td>
