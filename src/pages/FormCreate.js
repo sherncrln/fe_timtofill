@@ -304,7 +304,7 @@ function Question({ index, quest, type, parameter, handleQuestionChange, handleQ
                     <option value="text">Text</option>
                     <option value="date">Date</option>
                     <option value="dropdown">Dropdown</option>
-                    <option value="check">Check Box</option>
+                    <option value="checkbox">Check Box</option>
                     <option value="radio">Radio Button</option>
                     <option value="multi-text">Multi-Text</option>
                     <option value="multi-rating">Multi-Rating</option>

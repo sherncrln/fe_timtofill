@@ -26,7 +26,7 @@ export default function NavBar() {
         <Link to="/home" className="w-28 h-8 py-2 text-sm align-middle text-center rounded hover:bg-blue-100 text-[#f8fafc] tracking-widest hover:bg-blue-700 hover:text-indigo-950">Home</Link>
         {logged_data && logged_data['category'] === "Admin" ? (
           <>
-            <Link to="/responselist" className="w-28 h-8 py-2 text-sm align-middle text-center rounded hover:bg-blue-100 text-[#f8fafc] tracking-widest hover:bg-blue-700 hover:text-indigo-950">Response</Link>
+            <Link to="/response" className="w-28 h-8 py-2 text-sm align-middle text-center rounded hover:bg-blue-100 text-[#f8fafc] tracking-widest hover:bg-blue-700 hover:text-indigo-950">Response</Link>
             <Link to="/users" className="w-28 h-8 py-2 text-sm align-middle text-center rounded hover:bg-blue-100 text-[#f8fafc] tracking-widest hover:bg-blue-700 hover:text-indigo-950">Users</Link>
           </>
         ): null}

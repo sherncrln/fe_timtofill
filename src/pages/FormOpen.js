@@ -21,6 +21,8 @@ export default function FormOpen() {
         description: "",
         question: [],
         qtype: [],
+        section : [],
+        section_rule : []
     });
 
     
@@ -31,12 +33,13 @@ export default function FormOpen() {
     useEffect( () => {
         getFormDetail();
         getParameterDetail(user_id);
+        console.log(formDetail.section);
     }, []);
     
     function getFormDetail(){
         axios.get(`http://localhost/timetofill/form.php?form_id=${id}`, formDetail)
         .then(function(response) {
-            const { form_id, name_form, respondent, show_username, status_form, description, question, qtype } = response.data;
+            const { form_id, name_form, respondent, show_username, status_form, description, question, qtype, section, section_rule } = response.data;
             setFormDetail({
                 form_id,
                 name_form,
@@ -46,6 +49,8 @@ export default function FormOpen() {
                 description,
                 question: JSON.parse(question),
                 qtype: JSON.parse(qtype),
+                section: JSON.parse(section),
+                section_rule: JSON.parse(section_rule),
             });
         })
         .catch(function(error) {
@@ -108,9 +113,9 @@ export default function FormOpen() {
                 <NavBar />
                 <div className="flex flex-col">
                     <form onSubmit={handleSubmit}>
-                        <div className="flex items-center justify-between w-screen px-20 mb-4 mt-8">
-                            <h1 className="w-3/4 h-12 py-4 text-3xl text-blue-800 font-semibold tracking-widest bg-transparent text-wrap" >{formDetail.name_form} </h1>
-                            <div className=" w-max-w-72 flex items-center gap-x-4 mt-4 justify-end">
+                        <div className="flex justify-between w-screen px-20 mb-4 mt-8">
+                            <h1 className="flex items-center  w-3/4 h-20 text-3xl text-blue-800 font-semibold tracking-wider bg-transparent text-wrap" >{formDetail.name_form} </h1>
+                            <div className=" w-max-w-72 flex items-center  gap-x-4 justify-end ">
                                 <button onClick={backToHomePage} className="w-32 h-8 rounded bg-[#577BC1] tracking-widest text-sm text-[#f8fafc]">Back</button>
                                 <button type="submit" className="w-32 h-8 rounded bg-[#577BC1] tracking-widest text-sm text-[#f8fafc]">Save</button>
                             </div>
@@ -147,13 +152,14 @@ function Question({ index, quest, type, parameter,handleChange,paramDetail}) {
     return (
         <div className="mb-4">
             <div className="w-full flex row bg-blue-200 rounded-t-md">
-                <input disabled
+                <p className="w-full pl-8 py-2 text-lg text-blue-800 font-semibold bg-blue-200 tracking-wider" >{quest[0] || ""}</p>
+                {/* <input disabled
                     type="text" 
                     placeholder="Header"
-                    className="w-full pl-8 py-2 text-lg text-blue-800 font-semibold tracking-widest bg-blue-200" 
+                    className="w-full pl-8 py-2 text-lg text-blue-800 font-semibold bg-blue-200" 
                     value={quest[0] || ""}
                     name="question"
-                />
+                /> */}
             </div>
             <div className="w-full flex-row py-4 px-8 bg-[#f8fafc] rounded-b-md shadow-sm ">
                 {type[index][0] ? ( 
@@ -178,7 +184,7 @@ function Question({ index, quest, type, parameter,handleChange,paramDetail}) {
                             onChange={handleChange} 
                         />
                     </>
-                    ): type[index][0] === "check"  || type[index][0] === "radio" ? (
+                    ): type[index][0] === "checkbox"  || type[index][0] === "radio" ? (
                     <>
                         <div>
                         {subQtypes.map((subType, subIndex) => (
@@ -190,8 +196,9 @@ function Question({ index, quest, type, parameter,handleChange,paramDetail}) {
                                     id={subType}
                                     onChange={handleChange}
                                     value=""
+
                                 />
-                                <label for={quest[0]} className="p-4">{subType}</label>
+                                <label for={subType} className="px-4">{subType}</label>
                             </div>
                         ))}
                         </div>

@@ -369,7 +369,7 @@ function Question({ index, quest, type, parameter, handleQuestionChange, handleQ
                             className="w-full px-4 py-2 text-md text-blue-800 font-semibold bg-slate-300" 
                         />
                     </>
-                    ): type[index][0] === "dropdown" || type[index][0] === "check"  || type[index][0] === "radio" ? (
+                    ): type[index][0] === "dropdown" || type[index][0] === "checkbox"  || type[index][0] === "radio" ? (
                     <>
                         <div>
                         {subQtypes.map((subType, subIndex) => (
