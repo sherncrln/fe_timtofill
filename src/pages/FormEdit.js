@@ -74,7 +74,7 @@ export default function FormCreate2() {
                 axios.put(`http://localhost/timetofill/form.php/${id}`, JSON.stringify(updatedFormDetail))
                 .then(function(response){
                     console.log(response.data);                
-                    //backToHomePage();
+                    backToHomePage();
                 })
                 .catch(function(error){
                     console.error("There was an error!", error);
@@ -130,6 +130,7 @@ export default function FormCreate2() {
             newQTypes[index][0] = value;
             return { ...prevState, qtype: newQTypes };
         });
+        console.log(formDetail);
     };
 
     const handleSubQuestionChange = (qIndex, subIndex, value) => {
@@ -336,8 +337,9 @@ function Question({ index, quest, type, parameter, handleQuestionChange, handleQ
                     <option value="text">Text</option>
                     <option value="date">Date</option>
                     <option value="dropdown">Dropdown</option>
-                    <option value="check">Check Box</option>
+                    <option value="checkbox">Check Box</option>
                     <option value="radio">Radio Button</option>
+                    <option value="radio-rating">Rating Button</option>
                     <option value="multi-text">Multi-Text</option>
                     <option value="multi-rating">Multi-Rating</option>
                 </select>
@@ -366,6 +368,16 @@ function Question({ index, quest, type, parameter, handleQuestionChange, handleQ
                             type="date" 
                             id="answer"
                             name="answer"
+                            className="w-full px-4 py-2 text-md text-blue-800 font-semibold bg-slate-300" 
+                        />
+                    </>
+                    ): type[index][0] === "radio-rating" ? (
+                    <>
+                        <input disabled
+                            type="text" 
+                            id="answer"
+                            name="answer"
+                            placeholder="Rating Button"
                             className="w-full px-4 py-2 text-md text-blue-800 font-semibold bg-slate-300" 
                         />
                     </>
