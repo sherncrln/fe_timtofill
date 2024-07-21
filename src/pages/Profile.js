@@ -53,7 +53,7 @@ export default function Profile() {
 
   return (
     <>
-      <div>
+      <div className="w-screen">
         <NavBar />
         <p className="text-5xl text-blue-800 text-center tracking-widest mt-14 mb-6">Profile</p>
         <div className="flex items-center justify-center">

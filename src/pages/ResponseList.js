@@ -33,7 +33,7 @@ export default function ResponseList() {
 
   return (
     <>
-      <div className="min-h-screen flex flex-col">
+      <div className="w-screen min-h-screen flex flex-col">
         <NavBar />
         <div className="flex-grow flex flex-col items-center px-20 my-10">
           <p className="w-full text-3xl mb-8 text-blue-800 font-semibold tracking-widest"> List Form Response</p>

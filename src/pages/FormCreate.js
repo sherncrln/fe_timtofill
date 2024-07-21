@@ -306,6 +306,7 @@ function Question({ index, quest, type, parameter, handleQuestionChange, handleQ
                     <option value="dropdown">Dropdown</option>
                     <option value="checkbox">Check Box</option>
                     <option value="radio">Radio Button</option>
+                    <option value="radio-rating">Rating Button</option>
                     <option value="multi-text">Multi-Text</option>
                     <option value="multi-rating">Multi-Rating</option>
                 </select>
@@ -334,6 +335,16 @@ function Question({ index, quest, type, parameter, handleQuestionChange, handleQ
                             type="date" 
                             id="answer"
                             name="answer"
+                            className="w-full px-4 py-2 text-md text-blue-800 font-semibold bg-slate-300" 
+                        />
+                    </>
+                    ): type[0] === "radio-rating" ? (
+                    <>
+                        <input disabled
+                            type="text" 
+                            id="answer"
+                            name="answer"
+                            placeholder="Rating Button"
                             className="w-full px-4 py-2 text-md text-blue-800 font-semibold bg-slate-300" 
                         />
                     </>
