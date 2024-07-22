@@ -79,6 +79,8 @@ export default function SectionEdit({ onClose, formDetail, sec, secr }) {
         const newLayerTo = [...layer.layerto];
         newLayerTo[index] = event.target.value;
         setLayer(prevLayer => ({ ...prevLayer, layerto: newLayerTo }));
+        
+        //console.log(event,index,"tes");
     };
 
     const handleSetClick = (index) => {

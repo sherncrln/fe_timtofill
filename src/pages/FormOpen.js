@@ -7,6 +7,9 @@ export default function FormOpen() {
     const logged_data = JSON.parse(localStorage.getItem("logged_data"));
     const user_id = logged_data ? logged_data.user_id : null;
     
+    const className = logged_data.class;
+    const userName = logged_data.name;
+
     const [error, setError] = useState([]);
     const [paramDetail, setParameterDetail] = useState([]);
     const [paramName, setParameterName] = useState([]);
@@ -122,6 +125,8 @@ export default function FormOpen() {
     const handleSubmit = (event) => {
         event.preventDefault();
         const questionsForCurrentPage = formDetail.question.filter((q, index) => formDetail.section[index] == currentPage);
+        const answer = Object.values(response);
+        const resSubmit = [id, className, userName, answer];
         
         let allFilled = true;
         questionsForCurrentPage.forEach((q) => {
@@ -132,7 +137,16 @@ export default function FormOpen() {
         
         if (allFilled) {
             if (currentPage === totalPages) {
+                axios.post(`http://localhost/timetofill/response.php/`, JSON.stringify(resSubmit))
+                .then(function (response) {
+                    console.log(response.data);
+                    //backToHomePage(); 
+                })
+                .catch(function (error) {
+                    console.error("There was an error!", error);
+                });
                 console.log("Data Berhasil Disimpan");
+                console.log(resSubmit);
                 //backToHomePage();
             }
         } else {

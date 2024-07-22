@@ -5,7 +5,7 @@ import axios from "axios";
 
 export default function ClassList() {
   const [classData, setclassData] = useState([]);
-  const [mode, setMode] = useState('');
+  const [mode, setMode] = useState('add');
   const [file, setFile] = useState(null);
   const navigate = useNavigate();
 
@@ -39,6 +39,9 @@ export default function ClassList() {
     formData.append('file', file);
     formData.append('mode', mode);
 
+    console.log("Uploading file: ", file);
+    console.log("Mode: ", mode);
+
     axios.post('http://localhost/timetofill/class_upload.php', formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
@@ -49,12 +52,14 @@ export default function ClassList() {
         alert(response.data.message);
       } else {
         alert(response.data.message);
+        console.log(response.data);
       }
     }).catch(function(error){
-      console.log(error);
+      console.log("Error during file upload: ", error);
       alert('Failed to upload file.');
     });
   }
+
 
   return (
     <>
