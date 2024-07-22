@@ -96,7 +96,7 @@ export default function FormOpen() {
     const handleChange = (event) => {
         setError("");
         const { name, value, type, checked } = event.target;
-
+        
         setResponse((prevResponse) => ({
             ...prevResponse,
             [name]: type === "checkbox" ? checked : value,
@@ -129,6 +129,8 @@ export default function FormOpen() {
 
     const handleNext = () => {
         const questionsForCurrentPage = formDetail.question.filter((q, index) => formDetail.section[index] == currentPage);
+        var getLengthResponse = Object.keys(response).length;
+        var getValueResponse = Object.values(response)
         
         let allFilled = true;
         questionsForCurrentPage.forEach((q) => {
@@ -139,7 +141,15 @@ export default function FormOpen() {
 
         if (allFilled) {
             if (currentPage < totalPages) {
-                setCurrentPage(currentPage + 1);
+                if(formDetail.section_rule[currentPage - 1].length > 1){
+                    if(getValueResponse[getLengthResponse - 1] === 'Ya'){
+                        setCurrentPage(formDetail.section_rule[currentPage - 1][0]);
+                    } else {
+                        setCurrentPage(formDetail.section_rule[currentPage - 1][1]);
+                    }
+                } else {
+                    setCurrentPage(formDetail.section_rule[currentPage - 1][0]);
+                }
             }
         } else {
             setError("Semua input harus diisi sebelum melanjutkan.");
@@ -243,19 +253,19 @@ function Question({ index, quest, type, parameter, handleChange, paramDetail, pa
                     ) : type[index][0] === "radio-rating" ? (
                         <div className="flex-col">
                             <label className="px-4">
-                                <input type="radio" name={quest[0]} value="Sangat Baik" /> Sangat Baik
+                                <input type="radio" name={quest[0]} onChange={handleChange} value="Sangat Baik" /> Sangat Baik
                             </label>
                             <label className="px-4">
-                                <input type="radio" name={quest[0]} value="Baik" /> Baik
+                                <input type="radio" name={quest[0]} onChange={handleChange} value="Baik" /> Baik
                             </label>
                             <label className="px-4">
-                                <input type="radio" name={quest[0]} value="Cukup" /> Cukup
+                                <input type="radio" name={quest[0]} onChange={handleChange} value="Cukup" /> Cukup
                             </label>
                             <label className="px-4">
-                                <input type="radio" name={quest[0]} value="Kurang" /> Kurang
+                                <input type="radio" name={quest[0]} onChange={handleChange} value="Kurang" /> Kurang
                             </label>
                             <label className="px-4">
-                                <input type="radio" name={quest[0]} value="Sangat Kurang" /> Sangat Kurang
+                                <input type="radio" name={quest[0]} onChange={handleChange} value="Sangat Kurang" /> Sangat Kurang
                             </label>
                         </div>
                     ) : type[index][0] === "checkbox" || type[index][0] === "radio" ? (
