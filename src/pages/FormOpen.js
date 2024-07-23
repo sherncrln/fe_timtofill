@@ -8,7 +8,7 @@ export default function FormOpen() {
     const user_id = logged_data ? logged_data.user_id : null;
     
     const className = logged_data.class;
-    const userName = logged_data.name;
+    const userName = logged_data.username;
 
     const [error, setError] = useState([]);
     const [paramDetail, setParameterDetail] = useState([]);
