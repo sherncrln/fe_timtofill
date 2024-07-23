@@ -91,6 +91,7 @@ export default function FormList() {
     const closePopupDuplicate = () => {
         setPopupDuplicateVisible(false);
         setFormToDuplicate(null);
+        console.log(formList);
     };
 
     const duplicateForm = () => {
