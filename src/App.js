@@ -17,7 +17,7 @@ import FormOpen from './pages/FormOpen';
 
 function App() {
   return (
-    <div className='flex w-full min-h-screen h-full overflow-x-hidden'>
+    <div className='flex w-screen min-h-screen h-full overflow-x-hidden'>
       <Router>
           <Routes>
             <Route path="/" element={<Login />} />

@@ -36,8 +36,8 @@ export default function NavBar() {
 //         </button>
 //       </div>
 //     </div>
-    <div className="flex justify-between h-16 w-screen bg-[#577BC1]">
-      <div className="flex items-center py-1 ml-8 justify-start">
+    <div className="flex justify-between h-16 w-screen bg-[#577BC1] px-10">
+      <div className="flex items-center py-1 justify-start">
         <img className="size-14" src={Logo} alt="TimeToFill Logo" />
         <p className="text-[#F2F7FF] text-2xl tracking-widest ml-4">TimeToFill</p>
       </div>

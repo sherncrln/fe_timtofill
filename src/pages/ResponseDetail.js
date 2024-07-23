@@ -60,12 +60,12 @@ export default function ResponseDetail() {
 
   return (
     <>
-      <div className="min-h-screen flex flex-col">
+      <div className="min-h-screen flex flex-col w-full">
         <NavBar />
         <div className="flex-grow flex flex-col items-center px-20 my-10">
           <p className="w-full text-3xl mb-8 text-blue-800 font-semibold">Response : {headData.name_form}</p>
           <div className="w-full overflow-x-auto scrollbar-thin scrollbar-thumb-blue-700 scrollbar-track-blue-300">
-            <table className="w-full align-middle table-auto text-left overflow-hidden text-sm">
+            <table className="w-full align-middle table-auto text-left overflow-scroll text-sm">
               <thead className="h-10 bg-[#577BC1] text-center text-[#f8fafc] font-normal">
                 <tr>
                   <th scope="col" className="w-12">#</th>
