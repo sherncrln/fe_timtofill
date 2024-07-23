@@ -7,6 +7,9 @@ export default function FormOpen() {
     const logged_data = JSON.parse(localStorage.getItem("logged_data"));
     const user_id = logged_data ? logged_data.user_id : null;
     
+    const className = logged_data.class;
+    const userName = logged_data.username;
+
     const [error, setError] = useState([]);
     const [paramDetail, setParameterDetail] = useState([]);
     const [paramName, setParameterName] = useState([]);
@@ -33,12 +36,20 @@ export default function FormOpen() {
     };
 
     useEffect(() => {
-        getParameterDetail(user_id);
-        getParameterName(paramDetail);
+        if (user_id) {
+            getParameterDetail(user_id).then((detail) => { 
+                if (detail.length > 0) {
+                    getParameterName(detail).then((names) => { 
+                        setParameterName(names);
+                    });
+                }
+            }).catch(error => { 
+                console.error("Error fetching parameter details:", error);
+            });
+        }
         getFormDetail();
-        console.log(paramDetail);
-    }, []);
-    
+    }, [user_id, id]);
+
     useEffect(() => {
         if (formDetail.section.length > 0) {
             const maxSection = Math.max(...formDetail.section.map(s => parseInt(s)));
@@ -47,7 +58,7 @@ export default function FormOpen() {
     }, [formDetail]);
 
     function getFormDetail() {
-        axios.get(`http://localhost/timetofill/form.php?form_id=${id}`, formDetail)
+        axios.get(`http://localhost/timetofill/form.php?form_id=${id}`)
         .then(function(response) {
             const { form_id, name_form, respondent, show_username, status_form, description, question, qtype, section, section_rule } = response.data;
             setFormDetail({
@@ -66,47 +77,56 @@ export default function FormOpen() {
         .catch(function(error) {
             console.error("Error fetching form details:", error);
         });
-
     }
 
-    function getParameterDetail(user_id) {
-        axios.get(`http://localhost/timetofill/parameter.php?user_id=${user_id}`)
-            .then(function(response) {
-                if (logged_data['category'] === "Mahasiswa") {
-                    const valuesArray = Object.values(response.data);
-                    setParameterDetail(valuesArray);
-                } else if (logged_data['category'] === "Dosen") {
-                    const classesArray = response.data.classes.split(',').map(item => item.trim());
-                    setParameterDetail(classesArray);
-                }
-            })
-            .catch(function(error) {
-                console.error("Error fetching parameter details:", error);
-            });
+    async function getParameterDetail(user_id) {
+        try {
+            const response = await axios.get(`http://localhost/timetofill/parameter.php?user_id=${user_id}`);
+            if (logged_data['category'] === "Mahasiswa") {
+                const valuesArray = Object.values(response.data);
+                setParameterDetail(valuesArray);
+                return valuesArray; 
+            } else if (logged_data['category'] === "Dosen") {
+                const classesArray = response.data.classes.split(',').map(item => item.trim());
+                setParameterDetail(classesArray);
+                return classesArray;
+            }
+        } catch (error) {
+            console.error("Error fetching parameter details:", error);
+            return [];
+        }
     }
 
     async function getParameterName(paramDetail) {
-        const names = await Promise.all(paramDetail.map(async (p) => {
-            const response = await axios.get(`http://localhost/timetofill/parameter.php?p=${p}`);
-            return response.data.name;
-        }));
-        setParameterName(names);
+        try {
+            const names = await Promise.all(paramDetail.map(async (p) => {
+                const response = await axios.get(`http://localhost/timetofill/parameter.php?p=${p}`);
+                return response.data.name;
+            }));
+            setParameterName(names);
+            return names;
+        } catch (error) {
+            console.error("Error fetching parameter names:", error);
+            return []; 
+        }
     }
 
-    const handleChange = (event) => {
+    const handleChange = (e) => {
         setError("");
-        const { name, value, type, checked } = event.target;
-        
-        setResponse((prevResponse) => ({
+        const { name, value, type, checked } = e.target;
+    
+        setResponse(prevResponse => ({
             ...prevResponse,
-            [name]: type === "checkbox" ? checked : value,
+            [name]: type === "checkbox" ? (checked ? [...(prevResponse[name] || []), value] : (prevResponse[name] || []).filter(item => item !== value)) : value,
         }));
     };
     
+    
     const handleSubmit = (event) => {
         event.preventDefault();
-        const resplen = Object.keys(response).length;   
         const questionsForCurrentPage = formDetail.question.filter((q, index) => formDetail.section[index] == currentPage);
+        const answer = Object.values(response);
+        const resSubmit = [id, className, userName, answer];
         
         let allFilled = true;
         questionsForCurrentPage.forEach((q) => {
@@ -115,15 +135,25 @@ export default function FormOpen() {
             }
         });
         
-        if (allFilled && resplen === formDetail.question.length) {
-            if (currentPage < totalPages) {
-                setCurrentPage(currentPage + 1);
-                console.log("Data Berhasil Disimpan", response);
+        if (allFilled) {
+            if (currentPage === totalPages) {
+                axios.post(`http://localhost/timetofill/response.php/`, JSON.stringify(resSubmit))
+                .then(function (response) {
+                    console.log(response.data);
+                    //backToHomePage(); 
+                })
+                .catch(function (error) {
+                    console.error("There was an error!", error);
+                });
+                console.log("Data Berhasil Disimpan");
+                console.log(resSubmit);
+                //backToHomePage();
             }
         } else {
             setError("Semua input harus diisi sebelum disimpan.");
         }
         
+        console.log(questionsForCurrentPage);
         console.log(response);
     };
 
@@ -192,8 +222,10 @@ export default function FormOpen() {
                                     parameter={formDetail.respondent}
                                     handleChange={handleChange}
                                     response={response}
+                                    setResponse={setResponse}
                                     paramDetail={paramDetail}
                                     paramName={paramName}
+                                    setError={setError}
                                 />
                             ))}
                         </div>
@@ -215,14 +247,47 @@ export default function FormOpen() {
     );
 }
 
-function Question({ index, quest, type, parameter, handleChange, paramDetail, paramName, response }) {
+function Question({ index, quest, type, parameter, handleChange, paramDetail, paramName, response, setResponse, setError }) {
     const subQuestions = quest.slice(1);
     const subQtypes = type[index].slice(1);
 
-    // useEffect(() => {
-    //     console.log(subQuestions);
-    //     console.log(subQtypes);
-    // });
+    const handleInputChange = (e) => {
+        const { name, value, checked, type: inputType } = e.target;
+    
+        if (inputType === 'checkbox') {
+            // Pastikan response[name] adalah array
+            const currentValues = Array.isArray(response[name]) ? response[name] : [];
+            
+            const newValue = checked
+                ? [...currentValues, value] // Tambah value ke array jika dicentang
+                : currentValues.filter(item => item !== value); // Hapus value dari array jika tidak dicentang
+    
+            // Update state langsung di sini
+            setResponse(prevResponse => ({
+                ...prevResponse,
+                [name]: newValue
+            }));
+        } else {
+            handleChange(e);
+        }
+    };
+    
+    const handleMultiRatingChange = (param, subIndex, value) => {
+        setError("");
+        setResponse(prevResponse => {
+            // Buat salinan dari array sebelumnya atau inisialisasi dengan array kosong
+            const currentResponses = prevResponse[`${param} ${quest[0]}`] || Array(subQuestions.length).fill('');
+            
+            // Update nilai pada index yang sesuai
+            const updatedResponses = [...currentResponses];
+            updatedResponses[subIndex] = value;
+            
+            return {
+                ...prevResponse,
+                [`${param} ${quest[0]}`]: updatedResponses
+            };
+        });
+    };
 
     return (
         <div className="mb-4">
@@ -268,7 +333,7 @@ function Question({ index, quest, type, parameter, handleChange, paramDetail, pa
                                 <input type="radio" name={quest[0]} onChange={handleChange} value="Sangat Kurang" /> Sangat Kurang
                             </label>
                         </div>
-                    ) : type[index][0] === "checkbox" || type[index][0] === "radio" ? (
+                    ) : type[index][0] === "checkbox" ? (
                         <div>
                             {subQtypes.map((subType, subIndex) => (
                                 <div key={subIndex} className="flex-col">
@@ -277,9 +342,26 @@ function Question({ index, quest, type, parameter, handleChange, paramDetail, pa
                                         type={type[index][0]} 
                                         name={quest[0]}
                                         id={subType}
-                                        onChange={handleChange}
+                                        onChange={handleInputChange}
                                         value={subType}
-                                        // checked={response[quest[0]] === subType || (Array.isArray(response[quest[0]]) && response[quest[0]].includes(subType))}
+                                        checked={(Array.isArray(response[quest[0]]) && response[quest[0]].includes(subType))}
+                                    />
+                                    <label htmlFor={subType} className="px-4">{subType}</label>
+                                </div>
+                            ))}
+                        </div>
+                    ) : type[index][0] === "radio" ? (
+                        <div>
+                            {subQtypes.map((subType, subIndex) => (
+                                <div key={subIndex} className="flex-col">
+                                    <input 
+                                        key={subIndex}
+                                        type={type[index][0]} 
+                                        name={quest[0]}
+                                        id={subType}
+                                        onChange={handleInputChange}
+                                        value={subType}
+                                        checked={response[quest[0]] === subType}
                                     />
                                     <label htmlFor={subType} className="px-4">{subType}</label>
                                 </div>
@@ -339,7 +421,9 @@ function Question({ index, quest, type, parameter, handleChange, paramDetail, pa
                                                 key={index}
                                                 name={`${param} ${quest[0]}`} 
                                                 className="w-1/6 py-2 text-sm "
-                                                onChange={handleChange}>
+                                                value={response[`${param} ${quest[0]}`]?.[subIndex] || ''}
+                                                onChange={(e) => handleMultiRatingChange(param, subIndex, e.target.value)}
+                                            >
                                                 <option value="">Pilih</option>
                                                 <option value="5">Sangat Baik</option>
                                                 <option value="4">Baik</option>

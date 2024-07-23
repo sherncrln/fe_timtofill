@@ -42,7 +42,7 @@ export default function ResponseList() {
               <thead className="h-12 bg-[#577BC1] text-[#f8fafc] font-normal">
                 <tr>
                   <th scope="col" className="w-1/12">#</th>
-                  <th scope="col" className="w-8/12 text-left">Class</th>
+                  <th scope="col" className="w-8/12 text-left">Form Name</th>
                   <th scope="col" className="w-3/12">Action</th>
                 </tr>
               </thead>
@@ -53,7 +53,14 @@ export default function ResponseList() {
                       <td>{(currentPage - 1) * itemsPerPage + index + 1}</td>
                       <td className="text-left">{response.name_form}</td>
                       <td>
-                        <Link to={`/response/${response.form_id}/view`} style={{ marginRight: "10px" }}>Open</Link>
+                        {/* <Link to={`/response/${response.form_id}/view`} style={{ marginRight: "10px" }}>Open</Link> */}
+                        {response ? 
+                          ( response.respondent === "Dosen" && response.show_username === "N" ? (
+                            <Link to={`/response/class`} style={{ marginRight: "10px" }}>Open</Link>
+                          ): response.respondent === "Mahasiswa" && response.show_username === "N" ? (
+                            <Link to={`/response/dosen`} style={{ marginRight: "10px" }}>Open</Link>
+                          ): (<Link to={`/response/${response.form_id}/view`} style={{ marginRight: "10px" }}>Open</Link>)
+                        ): null}
                       </td>
                     </tr>
                   ))
