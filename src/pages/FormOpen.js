@@ -16,7 +16,8 @@ export default function FormOpen() {
     const navigate = useNavigate();
     const { id } = useParams();
     const [response, setResponse] = useState({});
-    const [currentPage, setCurrentPage] = useState(1);
+    const [prevPage, setPrevPage] = useState(['0']);
+    const [currentPage, setCurrentPage] = useState('1');
     const [totalPages, setTotalPages] = useState(1);
     const [formDetail, setFormDetail] = useState({
         form_id: id,
@@ -158,10 +159,14 @@ export default function FormOpen() {
     };
 
     const handleNext = () => {
+        setPrevPage([
+            ...prevPage,
+            currentPage
+        ])
         const questionsForCurrentPage = formDetail.question.filter((q, index) => formDetail.section[index] == currentPage);
         var getLengthResponse = Object.keys(response).length;
         var getValueResponse = Object.values(response)
-        
+
         let allFilled = true;
         questionsForCurrentPage.forEach((q) => {
             if (!response[q[0]]) {
@@ -188,14 +193,18 @@ export default function FormOpen() {
 
     const handlePrevious = () => {
         setError("");
-        if (currentPage > 1) {
-            setCurrentPage(currentPage - 1);
+        console.log(prevPage)
+
+        if (prevPage.length !== 1) {
+            setCurrentPage(prevPage[prevPage.length-1])
+            prevPage.splice(-1,1)
+        } else {
+            setCurrentPage(1)
         }
     };
 
     const questionsForCurrentPage = formDetail.question.filter((q, index) => formDetail.section[index] == currentPage);
     const qtypeForCurrentPage = formDetail.qtype.filter((q, index) => formDetail.section[index] == currentPage);
-
     return (
         <>
             <div className="w-screen min-h-screen h-full">
@@ -288,7 +297,6 @@ function Question({ index, quest, type, parameter, handleChange, paramDetail, pa
             };
         });
     };
-
     return (
         <div className="mb-4">
             <div className="w-full flex row bg-blue-200 rounded-t-md">
@@ -318,19 +326,49 @@ function Question({ index, quest, type, parameter, handleChange, paramDetail, pa
                     ) : type[index][0] === "radio-rating" ? (
                         <div className="flex-col">
                             <label className="px-4">
-                                <input type="radio" name={quest[0]} onChange={handleChange} value="Sangat Baik" /> Sangat Baik
+                                <input 
+                                    type="radio"
+                                    name={quest[0]} 
+                                    onChange={handleChange} 
+                                    value="Sangat Baik" 
+                                    checked={response[quest[0]] === 'Sangat Baik'} 
+                                /> Sangat Baik
                             </label>
                             <label className="px-4">
-                                <input type="radio" name={quest[0]} onChange={handleChange} value="Baik" /> Baik
+                                <input 
+                                    type="radio" 
+                                    name={quest[0]} 
+                                    onChange={handleChange} 
+                                    value="Baik" 
+                                    checked={response[quest[0]] === 'Baik'} 
+                                /> Baik
                             </label>
                             <label className="px-4">
-                                <input type="radio" name={quest[0]} onChange={handleChange} value="Cukup" /> Cukup
+                                <input 
+                                    type="radio" 
+                                    name={quest[0]} 
+                                    onChange={handleChange} 
+                                    value="Cukup"
+                                    checked={response[quest[0]] === 'Cukup'}  
+                                /> Cukup
                             </label>
                             <label className="px-4">
-                                <input type="radio" name={quest[0]} onChange={handleChange} value="Kurang" /> Kurang
+                                <input 
+                                    type="radio" 
+                                    name={quest[0]} 
+                                    onChange={handleChange} 
+                                    value="Kurang" 
+                                    checked={response[quest[0]] === 'Kurang'}
+                                /> Kurang
                             </label>
                             <label className="px-4">
-                                <input type="radio" name={quest[0]} onChange={handleChange} value="Sangat Kurang" /> Sangat Kurang
+                                <input 
+                                    type="radio" 
+                                    name={quest[0]} 
+                                    onChange={handleChange} 
+                                    value="Sangat Kurang"
+                                    checked={response[quest[0]] === 'Sangat Kurang'} 
+                                /> Sangat Kurang
                             </label>
                         </div>
                     ) : type[index][0] === "checkbox" ? (
