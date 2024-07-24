@@ -132,12 +132,11 @@ export default function FormOpen() {
         questionsForCurrentPage.forEach((q) => {
             if (!response[q[0]]) {
                 allFilled = false;
+                console.log("ini adalag q", q);
             }
         });
 
         console.log("Semua input terisi:", allFilled);
-        console.log("Respon submit:", resSubmit);
-        console.log("ini response:", response);
         console.log("total page cek", currentPage == totalPages);
         console.log(questionsForCurrentPage);
         

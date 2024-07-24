@@ -39,7 +39,7 @@ export default function ResponseList() {
     <>
       <div className="w-screen min-h-screen flex flex-col">
         <NavBar />
-        <div className="flex-grow flex flex-col items-center px-20 mt-10">
+        <div className="flex-grow flex flex-col items-center px-20 mt-4">
           <div className="flex justify-between w-screen px-20 mb-4">
               <h1 className="flex items-center w-10/12 h-20 text-3xl text-blue-800 font-semibold tracking-wider bg-transparent text-wrap">List Form Response</h1>
               <div className="w-2/12 flex items-center gap-x-4 justify-end">

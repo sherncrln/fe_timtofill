@@ -27,13 +27,20 @@ export default function ResponseDetail() {
   
   useEffect(() => {
     if (headData.qtype?.includes("multi-rating")) {
-      if (headData.respondent === "Dosen") {
-        setCheckParameter({status : "Class"});
-      } else if (headData.respondent === "Mahasiswa") {
-        setCheckParameter({status : "Dosen"});
+      const respondent = headData.respondent;
+      if (respondent === "Dosen") {
+        setCheckParameter(prevState => ({
+          ...prevState,
+          status: "Class",
+        }));
+      } else if (respondent === "Mahasiswa") {
+        setCheckParameter(prevState => ({
+          ...prevState,
+          status: "Dosen",
+        }));
       }
+      getParameter();
     }
-    console.log(parameter.status);
   }, [headData]);
 
   useEffect(() => {
@@ -41,14 +48,20 @@ export default function ResponseDetail() {
       try {
         const headerString = headData.question;
         const headerArray = JSON.parse(headerString);
-
-        if(parameter.status === ""){
+        const qtypeString = headData.qtype;
+        const qtypeArray = JSON.parse(qtypeString);
+  
+        if(parameter.status == ""){
           setHeader(headerArray);
-        }else if(parameter.status === "Dosen"){
-          const firstItemHeaders = headerArray.map(itemArray => itemArray[0]);
-          setHeader(firstItemHeaders);
-        }else if(parameter.status === "Class"){
-          const firstItemHeaders = headerArray.map(itemArray => itemArray[0]);
+        } else if(parameter.status == "Dosen" || parameter.status == "Class"){
+          const p = parameter.paramList;
+          const firstItemHeaders = headerArray.flatMap((itemArray, index) => {
+            if (qtypeArray[index] == "multi-rating") {
+              return p.map(param => `${param} ${itemArray[0]}`);
+            } else {              
+              return itemArray[0];
+            }
+          });
           setHeader(firstItemHeaders);
         }
       } catch (error) {
@@ -56,8 +69,8 @@ export default function ResponseDetail() {
       }
     }
     console.log("ini adalah header ajaaa", header);
-
-  }, [headData]);
+  
+  }, [headData, parameter]);
 
   useEffect(() => {
     // Update `answer` when `responseList` changes
@@ -71,6 +84,21 @@ export default function ResponseDetail() {
     });
     setAnswer(newAnswer);
   }, [responseList]);
+
+  function getParameter() {
+    axios.get(`http://localhost/timetofill/response_parameter.php?form_id=${id}`).then(function(response) {
+      if (response.data.parameter) {
+        const param = response.data.parameter.split(',');
+        setCheckParameter(prevState => ({
+          ...prevState,
+          paramList: param,
+        }));
+        // console.log(parameter.paramList);
+      }
+    }).catch(error => {
+      console.error("Error fetching data:", error);
+    });
+  }
 
   function getResponseList() {
     axios.get(`http://localhost/timetofill/response.php?form_id=${id}`).then(function(response) {
@@ -102,10 +130,12 @@ export default function ResponseDetail() {
     <>
       <div className="min-h-screen flex flex-col">
         <NavBar />
-        <div className="w-screen flex-grow flex flex-col items-center px-20 my-10">
+        <div className="w-screen flex-grow flex flex-col items-center px-20 my-4">
           <div className="flex justify-between w-full mb-4">
-              <h1 className="flex items-center w-10/12 h-20 text-3xl text-blue-800 font-semibold bg-transparent text-wrap ">Response : {headData.name_form}</h1>
-              <div className="w-2/12 flex items-center gap-x-4 justify-end">
+              <h1 className="flex items-center w-10/12 h-24 text-3xl text-blue-800 font-semibold bg-transparent text-wrap">Response : {headData.name_form}</h1>
+              <div className="w-3/12 flex items-center gap-x-1 justify-end">
+                  <button  className="w-32 h-8 rounded bg-[#577BC1] tracking-widest text-sm text-[#f8fafc]">Export</button>
+                  <button  className="w-32 h-8 rounded bg-[#577BC1] tracking-widest text-sm text-[#f8fafc]">Analyze</button>
                   <button onClick={backToResponseList} className="w-32 h-8 rounded bg-[#577BC1] tracking-widest text-sm text-[#f8fafc]">Back</button>
               </div>
           </div>
