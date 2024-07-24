@@ -15,11 +15,12 @@ import FormCreate from './pages/FormCreate';
 import FormEdit from './pages/FormEdit';
 import FormOpen from './pages/FormOpen';
 import HistoryList from './pages/HistoryList';
-import HistoryDetail from './pages/HistoryDetail';
+import HistoryDetail from './pages/HistoryDetail.js';
+import AnalyzeResponse from './pages/AnalyzeResponse.js';
 
 function App() {
   return (
-    <div className='flex w-screen min-h-screen h-full overflow-x-hidden'>
+    <div className='flex w-full min-h-screen h-full overflow-x-hidden'>
       <Router>
           <Routes>
             <Route path="/" element={<Login />} />
@@ -37,6 +38,7 @@ function App() {
             <Route path="/form/:id/open" element={<Protected Component={FormOpen} />} />
             <Route path="/history" element={<Protected Component={HistoryList} />} />
             <Route path="/history/:id/view" element={<Protected Component={HistoryDetail} />} />
+            <Route path="/analyze/:id/view" element={<Protected Component={AnalyzeResponse} />} />
           </Routes>
       </Router>
     </div>

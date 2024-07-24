@@ -139,7 +139,7 @@ export default function ResponseDetail() {
               <h1 className="flex items-center w-10/12 h-24 text-3xl text-blue-800 font-semibold bg-transparent text-wrap">Response : {headData.name_form}</h1>
               <div className="w-3/12 flex items-center gap-x-1 justify-end">
                   <button  className="w-32 h-8 rounded bg-[#577BC1] tracking-widest text-sm text-[#f8fafc]">Export</button>
-                  <button  className="w-32 h-8 rounded bg-[#577BC1] tracking-widest text-sm text-[#f8fafc]">Analyze</button>
+                  <button onClick={() => {navigate(`/analyze/${id}/view`)}} className="w-32 h-8 rounded bg-[#577BC1] tracking-widest text-sm text-[#f8fafc]">Analyze</button>
                   <button onClick={backToResponseList} className="w-32 h-8 rounded bg-[#577BC1] tracking-widest text-sm text-[#f8fafc]">Back</button>
               </div>
           </div>
