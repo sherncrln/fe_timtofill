@@ -62,14 +62,7 @@ export default function ResponseList() {
                       <td>{(currentPage - 1) * itemsPerPage + index + 1}</td>
                       <td className="text-left">{response.name_form}</td>
                       <td>
-                        {/* <Link to={`/response/${response.form_id}/view`} style={{ marginRight: "10px" }}>Open</Link> */}
-                        {response ? 
-                          ( response.respondent === "Dosen" && response.show_username === "N" ? (
-                            <Link to={`/response/${response.form_id}/view`} style={{ marginRight: "10px" }}>Open</Link>
-                          ): response.respondent === "Mahasiswa" && response.show_username === "N" ? (
-                            <Link to={`/response/${response.form_id}/view`} style={{ marginRight: "10px" }}>Open</Link>
-                          ): (<Link to={`/response/${response.form_id}/view`} style={{ marginRight: "10px" }}>Open</Link>)
-                        ): null}
+                        <Link to={`/response/${response.form_id}/view`} style={{ marginRight: "10px" }}>Open</Link>
                       </td>
                     </tr>
                   ))

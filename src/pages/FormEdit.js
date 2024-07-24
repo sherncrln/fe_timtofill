@@ -5,7 +5,7 @@ import SectionEdit from "../components/SectionEdit";
 import deleteQ from "../assets/deleteform.png";
 import axios from "axios";
 
-export default function FormCreate2() {
+export default function FormEdit() {
     const [error, setError] = useState([]);
     const navigate = useNavigate();
     const {id} = useParams();
