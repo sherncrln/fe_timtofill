@@ -9,6 +9,10 @@ export default function ResponseList() {
   const itemsPerPage = 10; // jumlah item per halaman
   const navigate = useNavigate();
 
+  const backToHomePage = () => {
+    navigate('/home');
+  };
+
   useEffect(() => {
     getResponseList();
   }, [currentPage]);
@@ -35,8 +39,13 @@ export default function ResponseList() {
     <>
       <div className="w-screen min-h-screen flex flex-col">
         <NavBar />
-        <div className="flex-grow flex flex-col items-center px-20 my-10">
-          <p className="w-full text-3xl mb-8 text-blue-800 font-semibold tracking-widest"> List Form Response</p>
+        <div className="flex-grow flex flex-col items-center px-20 mt-10">
+          <div className="flex justify-between w-screen px-20 mb-4">
+              <h1 className="flex items-center w-10/12 h-20 text-3xl text-blue-800 font-semibold tracking-wider bg-transparent text-wrap">List Form Response</h1>
+              <div className="w-2/12 flex items-center gap-x-4 justify-end">
+                  <button onClick={backToHomePage} className="w-32 h-8 rounded bg-[#577BC1] tracking-widest text-sm text-[#f8fafc]">Back</button>
+              </div>
+          </div>
           <div className="w-full">
             <table className="w-full align-middle table-auto tracking-widest text-center">
               <thead className="h-12 bg-[#577BC1] text-[#f8fafc] font-normal">
@@ -56,9 +65,9 @@ export default function ResponseList() {
                         {/* <Link to={`/response/${response.form_id}/view`} style={{ marginRight: "10px" }}>Open</Link> */}
                         {response ? 
                           ( response.respondent === "Dosen" && response.show_username === "N" ? (
-                            <Link to={`/response/class`} style={{ marginRight: "10px" }}>Open</Link>
+                            <Link to={`/response/${response.form_id}/view`} style={{ marginRight: "10px" }}>Open</Link>
                           ): response.respondent === "Mahasiswa" && response.show_username === "N" ? (
-                            <Link to={`/response/dosen`} style={{ marginRight: "10px" }}>Open</Link>
+                            <Link to={`/response/${response.form_id}/view`} style={{ marginRight: "10px" }}>Open</Link>
                           ): (<Link to={`/response/${response.form_id}/view`} style={{ marginRight: "10px" }}>Open</Link>)
                         ): null}
                       </td>
