@@ -125,16 +125,26 @@ export default function FormOpen() {
     const handleSubmit = (event) => {
         event.preventDefault();
         const questionsForCurrentPage = formDetail.question.filter((q, index) => formDetail.section[index] == currentPage);
-        //const answer = Object.values(response);
         const resSubmit = [id, className, userName, response];
         
         let allFilled = true;
-        questionsForCurrentPage.forEach((q) => {
-            if (!response[q[0]]) {
-                allFilled = false;
-                console.log("ini adalag q", q);
+        questionsForCurrentPage.forEach((q, index) => {
+            if(formDetail.qtype[index][0] === 'multi-rating'){
+                paramDetail.forEach((param, key) => {
+                    if (!response[`${param} ${q[0]}`]) {
+                        allFilled = false;
+                        console.log("ini adalag param", response[`${param} ${q[0]}`]);
+                    }
+                })
+            } else {
+                if (!response[q[0]]) {
+                    allFilled = false;
+                    console.log("ini adalag q", q);
+                }
             }
+            
         });
+
 
         console.log("Semua input terisi:", allFilled);
         console.log("total page cek", currentPage == totalPages);
@@ -146,14 +156,11 @@ export default function FormOpen() {
                 axios.post(`http://localhost/timetofill/response.php/`, JSON.stringify(resSubmit))
                 .then(function (response) {
                     console.log(response.data);
-                    //backToHomePage(); 
+                    backToHomePage(); 
                 })
                 .catch(function (error) {
                     console.error("There was an error!", error);
                 });
-                console.log("Data Berhasil Disimpan");
-                console.log("ini res untuk submit", resSubmit);
-                //backToHomePage();
             }
         } else {
             setError("Semua input harus diisi sebelum disimpan.");

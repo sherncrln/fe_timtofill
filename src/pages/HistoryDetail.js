@@ -132,7 +132,7 @@ function Question({ index, quest, type, parameter, paramDetail, paramName, answe
 
     return (
         <>
-        {answer[quest[0]]? (
+        {answer[quest[0]] || (type[index][0] === "multi-rating")? (
         <div className="mb-4">
             <div className="w-full flex row bg-blue-200 rounded-t-md">
                 <p className="w-full pl-8 py-2 text-lg text-blue-800 font-semibold bg-blue-200 tracking-wider">{quest[0] || ""}</p>
