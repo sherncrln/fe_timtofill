@@ -130,11 +130,21 @@ export default function FormOpen() {
         const resSubmit = [id, className, userName, response];
         
         let allFilled = true;
-        questionsForCurrentPage.forEach((q) => {
-            if (!response[q[0]]) {
-                allFilled = false;
-                console.log("ini adalag q", q);
+        questionsForCurrentPage.forEach((q, index) => {
+            if(formDetail.qtype[index][0] === 'multi-rating'){
+                paramDetail.forEach((param, key) => {
+                    if (!response[param[0] + q[0]]) {
+                        allFilled = false;
+                        console.log("ini adalag param", response);
+                    }
+                })
+            } else {
+                if (!response[q[0]]) {
+                    allFilled = false;
+                    console.log("ini adalag q", q);
+                }
             }
+            
         });
 
         console.log("Semua input terisi:", allFilled);
