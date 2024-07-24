@@ -14,6 +14,8 @@ import ClassDetail from './pages/ClassDetail';
 import FormCreate from './pages/FormCreate';
 import FormEdit from './pages/FormEdit';
 import FormOpen from './pages/FormOpen';
+import HistoryList from './pages/HistoryList';
+import HistoryDetail from './pages/HistoryDetail';
 
 function App() {
   return (
@@ -33,6 +35,8 @@ function App() {
             <Route path="/form" element={<Protected Component={FormCreate} />} />
             <Route path="/form/:id/edit" element={<Protected Component={FormEdit} />} />
             <Route path="/form/:id/open" element={<Protected Component={FormOpen} />} />
+            <Route path="/history" element={<Protected Component={HistoryList} />} />
+            <Route path="/history/:id/view" element={<Protected Component={HistoryDetail} />} />
           </Routes>
       </Router>
     </div>
