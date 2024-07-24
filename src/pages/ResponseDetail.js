@@ -67,22 +67,27 @@ export default function ResponseDetail() {
       } catch (error) {
         console.error("Error parsing header data:", error);
       }
-    }
-    console.log("ini adalah header ajaaa", header);
-  
+    }    
   }, [headData, parameter]);
-
+  
   useEffect(() => {
-    // Update `answer` when `responseList` changes
     const newAnswer = responseList.map(response => {
       try {
-        return JSON.parse(response.answer);
+        const parsedAnswer = JSON.parse(response.answer);
+            // Iterate over each key in parsedAnswer
+            Object.keys(parsedAnswer).forEach(key => {
+                if (Array.isArray(parsedAnswer[key])) {
+                    parsedAnswer[key] = parsedAnswer[key].join(', ');
+                }
+            });
+            return parsedAnswer;
       } catch (error) {
         console.error("Error parsing answer:", error);
         return [];
       }
     });
     setAnswer(newAnswer);
+    console.log("ini adalah answer ajaaa", answer);
   }, [responseList]);
 
   function getParameter() {
@@ -93,7 +98,6 @@ export default function ResponseDetail() {
           ...prevState,
           paramList: param,
         }));
-        // console.log(parameter.paramList);
       }
     }).catch(error => {
       console.error("Error fetching data:", error);
