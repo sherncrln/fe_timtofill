@@ -132,7 +132,7 @@ export default function ResponseDetail() {
 
   return (
     <>
-      <div className="min-h-screen flex flex-col">
+      <div className="min-h-screen flex flex-col w-full">
         <NavBar />
         <div className="w-screen flex-grow flex flex-col items-center px-20 my-4">
           <div className="flex justify-between w-full mb-4">
