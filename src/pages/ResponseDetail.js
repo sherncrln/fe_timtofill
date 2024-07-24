@@ -119,7 +119,7 @@ export default function ResponseDetail() {
                   <th scope="col" className="min-w-20">Class</th>
                   {
                   header.map((header, index) => (
-                    <th key={index} scope="col" className="min-w-32 max-w-96" title={header} ><p className="line-clamp-2" >{header}</p></th>
+                    <th key={index} scope="col" className="min-w-32 max-w-96" title={header} ><p className="line-clamp-3" >{header}</p></th>
                   ))
                   }
                 </tr>
