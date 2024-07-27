@@ -23,6 +23,7 @@ export default function ResponseDetail() {
 
   useEffect(() => {
     getResponseList();
+    // console.log("ini merupakan response", responseList);
   }, [currentPage]);
   
   useEffect(() => {
@@ -68,6 +69,7 @@ export default function ResponseDetail() {
         console.error("Error parsing header data:", error);
       }
     }    
+    // console.log("ini merupakan headData", headData);
   }, [headData, parameter]);
   
   useEffect(() => {
@@ -87,7 +89,7 @@ export default function ResponseDetail() {
       }
     });
     setAnswer(newAnswer);
-    console.log("ini adalah answer ajaaa", answer);
+    // console.log("ini adalah answer ajaaa", answer);
   }, [responseList]);
 
   function getParameter() {
@@ -118,7 +120,6 @@ export default function ResponseDetail() {
       setResponseList([]);
       setHeadData({});
     });
-    console.log("ini merupakan response", responseList);
   }
 
   const totalPages = Math.ceil(responseList.length / itemsPerPage);
@@ -149,7 +150,9 @@ export default function ResponseDetail() {
                 <tr className="align-middle">
                   <th scope="col" className="min-w-12">#</th>
                   <th scope="col" className="min-w-36">Timestamp</th>
-                  <th scope="col" className="min-w-24">Responder</th>
+                  {headData.show_username === "Y"? (
+                    <th scope="col" className="min-w-24">Responder</th>
+                  ) : (null)}
                   <th scope="col" className="min-w-20">Class</th>
                   {
                   header.map((header, index) => (
@@ -164,7 +167,9 @@ export default function ResponseDetail() {
                     <tr className="border border-gray-300 h-8" key={index}>
                       <td className="w-12 text-center ">{(currentPage - 1) * itemsPerPage + index + 1}</td>
                       <td className="border border-gray-300">{response.timestamp}</td>
-                      <td className="text-center border border-gray-300">{response.name}</td>
+                      {headData.show_username === "Y"? (
+                        <td className="text-center border border-gray-300">{response.name}</td>                        
+                      ) : (null)}
                       <td className="text-center border border-gray-300">{response.class}</td>
                       {header.map((headerItem, ansIndex) => (
                       <td key={ansIndex} scope="col" className="border border-gray-300">

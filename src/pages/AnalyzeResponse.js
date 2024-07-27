@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
+// import { Bar } from "react-chartjs-2";
+// import { Chart, CategoryScale, LinearScale, BarElement } from 'chart.js';
 import NavBar from "../components/NavBar";
 import axios from "axios";
 
@@ -9,6 +11,7 @@ export default function AnalyzeResponse() {
   const [header, setHeader] = useState([]);
   const [answer, setAnswer] = useState({});
   const [currentPage, setCurrentPage] = useState(1);
+  const [sumby, setSumBy] = useState("Question");
   const [parameter, setCheckParameter] = useState({
     status : "",
     paramList : [],
@@ -23,87 +26,8 @@ export default function AnalyzeResponse() {
 
   useEffect(() => {
     getResponseList();
-  }, [currentPage]);
-  
-  useEffect(() => {
-    if (headData.qtype?.includes("multi-rating")) {
-      const respondent = headData.respondent;
-      if (respondent === "Dosen") {
-        setCheckParameter(prevState => ({
-          ...prevState,
-          status: "Class",
-        }));
-      } else if (respondent === "Mahasiswa") {
-        setCheckParameter(prevState => ({
-          ...prevState,
-          status: "Dosen",
-        }));
-      }
-      getParameter();
-    }
   }, [headData]);
-
-  useEffect(() => {
-    if (headData.question) {
-      try {
-        const headerString = headData.question;
-        const headerArray = JSON.parse(headerString);
-        const qtypeString = headData.qtype;
-        const qtypeArray = JSON.parse(qtypeString);
   
-        if(parameter.status == ""){
-          setHeader(headerArray);
-        } else if(parameter.status == "Dosen" || parameter.status == "Class"){
-          const p = parameter.paramList;
-          const firstItemHeaders = headerArray.flatMap((itemArray, index) => {
-            if (qtypeArray[index] == "multi-rating") {
-              return p.map(param => `${param} ${itemArray[0]}`);
-            } else {              
-              return itemArray[0];
-            }
-          });
-          setHeader(firstItemHeaders);
-        }
-      } catch (error) {
-        console.error("Error parsing header data:", error);
-      }
-    }    
-  }, [headData, parameter]);
-  
-  useEffect(() => {
-    const newAnswer = responseList.map(response => {
-      try {
-        const parsedAnswer = JSON.parse(response.answer);
-            // Iterate over each key in parsedAnswer
-            Object.keys(parsedAnswer).forEach(key => {
-                if (Array.isArray(parsedAnswer[key])) {
-                    parsedAnswer[key] = parsedAnswer[key].join(', ');
-                }
-            });
-            return parsedAnswer;
-      } catch (error) {
-        console.error("Error parsing answer:", error);
-        return [];
-      }
-    });
-    setAnswer(newAnswer);
-    // console.log("ini adalah answer ajaaa", answer);
-  }, [responseList]);
-
-  function getParameter() {
-    axios.get(`http://localhost/timetofill/response_parameter.php?form_id=${id}`).then(function(response) {
-      if (response.data.parameter) {
-        const param = response.data.parameter.split(',');
-        setCheckParameter(prevState => ({
-          ...prevState,
-          paramList: param,
-        }));
-      }
-    }).catch(error => {
-      console.error("Error fetching data:", error);
-    });
-  }
-
   function getResponseList() {
     axios.get(`http://localhost/timetofill/response.php?form_id=${id}`).then(function(response) {
       if (response.data) {
@@ -115,20 +39,121 @@ export default function AnalyzeResponse() {
       }
     }).catch(error => {
       console.error("Error fetching data:", error);
-      setResponseList([]);
-      setHeadData({});
     });
-    // console.log("ini merupakan header", header);
+    // console.log("ini merupakan response list", responseList);
+    // console.log("ini merupakan Head Data", headData);
   }
+   
+  const handleSumBy = (event) => {
+    setSumBy(event.target.value);
+  };
+      
+  const handleSubmit = (event)=>{
+    event.preventDefault();
+    processHeaderData();
+    console.log("HEADER : ",header, sumby);
+  }
+  
+  const processHeaderData = () => {
+    if (headData.question) {
+      try {
+        const headerString = headData.question;
+        const headerArray = JSON.parse(headerString);
+        setHeader(headerArray);
+        // const qtypeString = headData.qtype;
+        // const qtypeArray = JSON.parse(qtypeString);
 
-  const totalPages = Math.ceil(header.length / itemsPerPage);
+        // if(parameter.status == ""){
+        //     setHeader(headerArray);
+        // }else if(parameter.status == "Dosen" || parameter.status == "Class"){
+        //   const p = [1,2,3,4,5];
+        //   // const p = parameter.paramList;
+        //   const firstItemHeaders = headerArray.flatMap((itemArray, index) => {
+        //     if (qtypeArray[index] == "multi-rating" || sumby == "Dosen" || sumby == "Class") {
+        //       return p.map(param => `${param} ${itemArray[0]}`);
+        //     } else {              
+        //       return itemArray[0];
+        //     }
+        //   });
+        //   setHeader(firstItemHeaders);
+        // }
+        // console.log("qtypeArray : ", qtypeArray);
+      } catch (error) {
+        console.error("Error parsing header data:", error);
+      }
+    }
+    // console.log("ini adalah header ajaaa", header);
+  };
+  
+ 
 
-  const currentData = header.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
+  // useEffect(() => {
+  //   if (headData.qtype?.includes("multi-rating")) {
+  //     const respondent = headData.respondent;
+  //     if (respondent === "Dosen") {
+  //       setCheckParameter(prevState => ({
+  //         ...prevState,
+  //         status: "Class",
+  //       }));
+  //     } else if (respondent === "Mahasiswa") {
+  //       setCheckParameter(prevState => ({
+  //         ...prevState,
+  //         status: "Dosen",
+  //       }));
+  //     }
+  //     getParameter();
+  //   }
+  // }, [headData]);
 
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+  // function getParameter() {
+  //   axios.get(`http://localhost/timetofill/response_parameter.php?form_id=${id}`).then(function(response) {
+  //     if (response.data.parameter) {
+  //       const param = response.data.parameter.split(',');
+  //       setCheckParameter(prevState => ({
+  //         ...prevState,
+  //         paramList: param,
+  //       }));
+  //     }
+  //   }).catch(error => {
+  //     console.error("Error fetching data:", error);
+  //   });
+  // }  
+
+
+  // useEffect(() => {
+    //   const newAnswer = responseList.map(response => {
+  //     try {
+  //       const parsedAnswer = JSON.parse(response.answer);
+  //           // Iterate over each key in parsedAnswer
+  //           Object.keys(parsedAnswer).forEach(key => {
+  //               if (Array.isArray(parsedAnswer[key])) {
+  //                   parsedAnswer[key] = parsedAnswer[key].join(', ');
+  //               }
+  //           });
+  //           return parsedAnswer;
+  //     } catch (error) {
+  //       console.error("Error parsing answer:", error);
+  //       return [];
+  //     }
+  //   });
+  //   setAnswer(newAnswer);
+  //   // console.log("ini adalah answer ajaaa", answer);
+  // }, [responseList]);
+
+  // useEffect(() => {
+  //   getResponseList();
+  // }, [currentPage]);
+
+
+
+  // const totalPages = Math.ceil(header.length / itemsPerPage);
+
+  // const currentData = header.slice(
+  //   (currentPage - 1) * itemsPerPage,
+  //   currentPage * itemsPerPage
+  // );
+
+  // const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   return (
     <>
@@ -150,43 +175,56 @@ export default function AnalyzeResponse() {
                     <h1 className="px-4">to</h1>
                     <input type="date" className="px-2 bg-gray-300 rounded" name="period_to"/>
                 </div>
-                <div className="w-2/5 justify-end">
+                <div className="w-2/5 flex justify-end mr-10">
                     <label className="px-4">
                     <input 
                             type="radio"
-                            name="parameter" 
-                            // onChange={handleChange} 
+                            name="sumby" 
+                            onChange={handleSumBy} 
                             value="Question" 
-                            checked="Question" 
                         /> Sum by Question
                     </label>
-                    <label className="px-4">
-                        <input 
-                            type="radio" 
-                            name="parameter" 
-                            // onChange={handleChange} 
-                            value="Dosen" 
-                        /> Sum by Variable
-                    </label>
-                    <label className="px-4">
-                        <input 
-                            type="radio" 
-                            name="parameter" 
-                            // onChange={handleChange} 
-                            value="Class"
-                        /> Sum by Class
-                    </label>
+                    {headData.qtype?.includes("multi-rating") && headData.respondent == "Mahasiswa"? (
+                      <label className="px-4">
+                          <input 
+                              type="radio" 
+                              name="sumby" 
+                              onChange={handleSumBy} 
+                              value="Dosen" 
+                          /> Sum by Variable
+                      </label>
+                    ) : headData.qtype?.includes("multi-rating") && headData.respondent == "Dosen"? (
+                      <label className="px-4">
+                          <input 
+                              type="radio" 
+                              name="sumby" 
+                              onChange={handleSumBy} 
+                              value="Class"
+                          /> Sum by Class
+                      </label>
+                    ) : null }
                 </div>
             </div>
-            <div className="w-full py-4 flex justify-end"><button  className="w-32 h-8 rounded bg-[#577BC1] tracking-widest text-sm text-[#f8fafc] justify-end">Apply</button></div>
+            <div className="w-full py-4 flex justify-end">
+              <button onClick={handleSubmit} className="w-32 h-8 rounded bg-[#577BC1] tracking-widest text-sm text-[#f8fafc] justify-end">Apply</button>
             </div>
-            <div className="w-full bg-white">
+            <div className="w-full py-4 flex items-center justify-center">
+            </div>
+            </div>
+            
+            {/* <div className="w-full">
             {
                 currentData.map((header, index) => (
-                    <div className="flex border border-y-slate-600 min-h-10 max-h-32 items-center py-2" key={index}>
+                  <div key={`${header} ${index}`}>
+                    <div className="bg-blue-200 flex rounded-t-md border border-y-slate-300 min-h-10 max-h-32 items-center py-2 mt-4" key={index}>
                         <p className="px-10 w-12 text-left">{(currentPage - 1) * itemsPerPage + index + 1}</p>
-                        <p className="px-2 text-left" >{header}</p>
+                        <p className="px-10 text-left" >{header}</p>
                     </div>
+                    <div className="bg-white flex rounded-b-md border border-y-slate-300 min-h-10 max-h-32 items-center py-2 mb-4" key={index}>
+                        <p className="px-10 w-12 text-left">{(currentPage - 1) * itemsPerPage + index + 1}</p>
+                        {headData.qtype.map((option, opIndex) => (<p className="px-2 text-left" >{option[index][opIndex]}</p>))}
+                    </div>
+                  </div>
                 ))
             }
             </div>
@@ -205,7 +243,7 @@ export default function AnalyzeResponse() {
                 ))}
                 </ul>
             </nav>
-            </div>
+            </div> */}
         </div>
       </div>
     </>
