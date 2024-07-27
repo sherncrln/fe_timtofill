@@ -2,6 +2,9 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import NavBar from "../components/NavBar";
 import axios from "axios";
+import * as XLSX from "xlsx";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 export default function ResponseDetail() {
   const [responseList, setResponseList] = useState([]);
@@ -16,6 +19,9 @@ export default function ResponseDetail() {
   const { id } = useParams();
   const itemsPerPage = 20;
   const navigate = useNavigate();
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
+  const [showDatePicker, setShowDatePicker] = useState(false);
 
   const backToResponseList = () => {
     navigate('/response');
@@ -131,6 +137,63 @@ export default function ResponseDetail() {
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
+  const handleExportClick = () => {
+    setShowDatePicker(true);
+  };
+
+  const handleExport = () => {
+    setShowDatePicker(false);
+  
+    // Modifikasi startDate dan endDate untuk mencakup seluruh hari
+    const start = startDate ? new Date(startDate.setHours(0, 0, 0, 0)) : null;
+    const end = endDate ? new Date(endDate.setHours(23, 59, 59, 999)) : null;
+  
+    const headers = [
+      "Timestamp",
+      "Responder",
+      "Class",
+      ...header
+    ];
+  
+    const filteredData = responseList.filter(response => {
+      const timestamp = new Date(response.timestamp);
+      return (!start || timestamp >= start) && (!end || timestamp <= end);
+    });
+  
+    const dataToExport = filteredData.map(response => {
+      const parsedAnswer = JSON.parse(response.answer);
+  
+      Object.keys(parsedAnswer).forEach(key => {
+        if (Array.isArray(parsedAnswer[key])) {
+          parsedAnswer[key] = parsedAnswer[key].join(', ');
+        }
+      });
+  
+      const dataObject = {
+        Timestamp: response.timestamp,
+        Responder: headData.show_username === "Y" ? response.name : '',
+        Class: response.class,
+        ...parsedAnswer
+      };
+  
+      headers.forEach(header => {
+        if (!(header in dataObject)) {
+          dataObject[header] = ''; 
+        }
+      });
+  
+      return dataObject;
+    });
+  
+    const ws = XLSX.utils.json_to_sheet(dataToExport, { header: headers });
+  
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Responses");
+  
+    XLSX.writeFile(wb, `Responses_${headData.name_form}.xlsx`);
+  };
+  
+
   return (
     <>
       <div className="min-h-screen flex flex-col w-full">
@@ -139,7 +202,7 @@ export default function ResponseDetail() {
           <div className="flex justify-between w-full mb-4">
               <h1 className="flex items-center w-10/12 h-24 text-3xl text-blue-800 font-semibold bg-transparent text-wrap">Response : {headData.name_form}</h1>
               <div className="w-3/12 flex items-center gap-x-1 justify-end">
-                  <button  className="w-32 h-8 rounded bg-[#577BC1] tracking-widest text-sm text-[#f8fafc]">Export</button>
+                  <button onClick={handleExportClick} className="w-32 h-8 rounded bg-[#577BC1] tracking-widest text-sm text-[#f8fafc]">Export</button>
                   <button onClick={() => {navigate(`/analyze/${id}/view`)}} className="w-32 h-8 rounded bg-[#577BC1] tracking-widest text-sm text-[#f8fafc]">Analyze</button>
                   <button onClick={backToResponseList} className="w-32 h-8 rounded bg-[#577BC1] tracking-widest text-sm text-[#f8fafc]">Back</button>
               </div>
@@ -200,6 +263,37 @@ export default function ResponseDetail() {
           </div>
         </div>
       </div>
+
+      {showDatePicker && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white p-6 rounded shadow-lg">
+            <h2 className="text-xl font-bold mb-4">Select Date Range</h2>
+            <div className="flex flex-col mb-4">
+              <label className="mb-2">Start Date:</label>
+              <DatePicker
+                selected={startDate}
+                onChange={date => setStartDate(date)}
+                dateFormat="yyyy-MM-dd"
+                className="border p-2 rounded"
+              />
+            </div>
+            <div className="flex flex-col mb-4">
+              <label className="mb-2">End Date:</label>
+              <DatePicker
+                selected={endDate}
+                onChange={date => setEndDate(date)}
+                dateFormat="yyyy-MM-dd"
+                className="border p-2 rounded"
+              />
+            </div>
+            <div className="flex justify-end">
+              <button onClick={handleExport} className="bg-blue-500 text-white px-4 py-2 rounded mr-2">Export</button>
+              <button onClick={() => setShowDatePicker(false)} className="bg-gray-500 text-white px-4 py-2 rounded">Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </>
   );
 }
