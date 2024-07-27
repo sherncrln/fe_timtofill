@@ -1,17 +1,39 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-// import { Bar } from "react-chartjs-2";
-// import { Chart, CategoryScale, LinearScale, BarElement } from 'chart.js';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+} from "chart.js";
+import { Bar } from "react-chartjs-2";
+import ChartDataLabels from 'chartjs-plugin-datalabels';
 import NavBar from "../components/NavBar";
 import axios from "axios";
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  ChartDataLabels
+);
 
 export default function AnalyzeResponse() {
   const [responseList, setResponseList] = useState([]);
   const [headData, setHeadData] = useState([]);
   const [header, setHeader] = useState([]);
+  const [qtypeList, setQtypeList] = useState([]);
   const [answer, setAnswer] = useState({});
   const [currentPage, setCurrentPage] = useState(1);
   const [sumby, setSumBy] = useState("Question");
+  const [dataOption, setDataOption] = useState([]);
+  const [dataCountOption, setDataCountOption] = useState([]);
   const [parameter, setCheckParameter] = useState({
     status : "",
     paramList : [],
@@ -51,7 +73,10 @@ export default function AnalyzeResponse() {
   const handleSubmit = (event)=>{
     event.preventDefault();
     processHeaderData();
-    console.log("HEADER : ",header, sumby);
+    getAnswer();
+    console.log("HEADER : ",header);
+    console.log("qTYPE : ",qtypeList);
+    console.log("ini adalah answer ajaaa", answer);
   }
   
   const processHeaderData = () => {
@@ -59,25 +84,22 @@ export default function AnalyzeResponse() {
       try {
         const headerString = headData.question;
         const headerArray = JSON.parse(headerString);
-        setHeader(headerArray);
-        // const qtypeString = headData.qtype;
-        // const qtypeArray = JSON.parse(qtypeString);
+        const qtypeString = headData.qtype;
+        const qtypeArray = JSON.parse(qtypeString);
 
-        // if(parameter.status == ""){
-        //     setHeader(headerArray);
-        // }else if(parameter.status == "Dosen" || parameter.status == "Class"){
-        //   const p = [1,2,3,4,5];
-        //   // const p = parameter.paramList;
-        //   const firstItemHeaders = headerArray.flatMap((itemArray, index) => {
-        //     if (qtypeArray[index] == "multi-rating" || sumby == "Dosen" || sumby == "Class") {
-        //       return p.map(param => `${param} ${itemArray[0]}`);
-        //     } else {              
-        //       return itemArray[0];
-        //     }
-        //   });
-        //   setHeader(firstItemHeaders);
-        // }
-        // console.log("qtypeArray : ", qtypeArray);
+        if(headData.qtype?.includes("multi-rating")){
+          const firstItemHeaders = headerArray.flatMap((itemArray, index) => {
+            return itemArray[0];
+          });
+          const firstItemQtype = qtypeArray.flatMap((itemArray, index) => {
+            return JSON.parse(itemArray[0]);
+          });
+          setHeader(firstItemHeaders);
+          setQtypeList(firstItemQtype);
+        }else {
+          setHeader(headerArray);
+          setQtypeList(qtypeArray);
+        }
       } catch (error) {
         console.error("Error parsing header data:", error);
       }
@@ -85,75 +107,83 @@ export default function AnalyzeResponse() {
     // console.log("ini adalah header ajaaa", header);
   };
   
- 
+  function getAnswer(){
+    const newAnswer = responseList.map(response => {
+      try {
+        const parsedAnswer = JSON.parse(response.answer);
+            // Iterate over each key in parsedAnswer
+            Object.keys(parsedAnswer).forEach(key => {
+                if (Array.isArray(parsedAnswer[key])) {
+                    parsedAnswer[key] = parsedAnswer[key].join(', ');
+                }
+            });
+            return parsedAnswer;
+      } catch (error) {
+        console.error("Error parsing answer:", error);
+        return [];
+      }
+    });
+    setAnswer(newAnswer);
+    processDataAnswer(newAnswer);
+  }
 
-  // useEffect(() => {
-  //   if (headData.qtype?.includes("multi-rating")) {
-  //     const respondent = headData.respondent;
-  //     if (respondent === "Dosen") {
-  //       setCheckParameter(prevState => ({
-  //         ...prevState,
-  //         status: "Class",
-  //       }));
-  //     } else if (respondent === "Mahasiswa") {
-  //       setCheckParameter(prevState => ({
-  //         ...prevState,
-  //         status: "Dosen",
-  //       }));
-  //     }
-  //     getParameter();
-  //   }
-  // }, [headData]);
+  const processDataAnswer = (answers) => {
+    const options = [];
+    const counts = [];
 
-  // function getParameter() {
-  //   axios.get(`http://localhost/timetofill/response_parameter.php?form_id=${id}`).then(function(response) {
-  //     if (response.data.parameter) {
-  //       const param = response.data.parameter.split(',');
-  //       setCheckParameter(prevState => ({
-  //         ...prevState,
-  //         paramList: param,
-  //       }));
-  //     }
-  //   }).catch(error => {
-  //     console.error("Error fetching data:", error);
-  //   });
-  // }  
+    header.forEach((question, index) => {
+      const qtype = qtypeList[index][0];
+      if (["dropdown", "checkbox", "radio", "radio-rating"].includes(qtype)) {
+        const optionValues = qtypeList[index].slice(1);
+        options.push(optionValues);
+        
+        const countValues = optionValues.map(option => 0);
+        
+        answers.forEach(answer => {
+          const value = answer[question];
+          if (value) {
+            const values = value.split(', ');
+            values.forEach(val => {
+              const optionIndex = optionValues.indexOf(val);
+              if (optionIndex !== -1) {
+                countValues[optionIndex]++;
+              }
+            });
+          }
+        });
 
+        counts.push(countValues);
+      } else {
+        options.push(['']);
+        counts.push(['']);
+      }
+    });
 
-  // useEffect(() => {
-    //   const newAnswer = responseList.map(response => {
-  //     try {
-  //       const parsedAnswer = JSON.parse(response.answer);
-  //           // Iterate over each key in parsedAnswer
-  //           Object.keys(parsedAnswer).forEach(key => {
-  //               if (Array.isArray(parsedAnswer[key])) {
-  //                   parsedAnswer[key] = parsedAnswer[key].join(', ');
-  //               }
-  //           });
-  //           return parsedAnswer;
-  //     } catch (error) {
-  //       console.error("Error parsing answer:", error);
-  //       return [];
-  //     }
-  //   });
-  //   setAnswer(newAnswer);
-  //   // console.log("ini adalah answer ajaaa", answer);
-  // }, [responseList]);
+    setDataOption(options);
+    setDataCountOption(counts);
+    console.log("DataOption: ", options);
+    console.log("DataCountOption: ", counts);
+  };
 
-  // useEffect(() => {
-  //   getResponseList();
-  // }, [currentPage]);
+  const data = {
+    labels: ["first", "second", "third", "4th", "5th"],
+    datasets: [
+      {
+        label: "First set",
+        data: [1, 2, 4, 8, 20],
+        backgroundColor: "blue"
+      }
+    ]
+  };
 
+  const totalPages = Math.ceil(header.length / itemsPerPage);
 
+  const currentData = header.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
-  // const totalPages = Math.ceil(header.length / itemsPerPage);
-
-  // const currentData = header.slice(
-  //   (currentPage - 1) * itemsPerPage,
-  //   currentPage * itemsPerPage
-  // );
-
-  // const paginate = (pageNumber) => setCurrentPage(pageNumber);
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   return (
     <>
@@ -209,20 +239,73 @@ export default function AnalyzeResponse() {
               <button onClick={handleSubmit} className="w-32 h-8 rounded bg-[#577BC1] tracking-widest text-sm text-[#f8fafc] justify-end">Apply</button>
             </div>
             <div className="w-full py-4 flex items-center justify-center">
+              
             </div>
             </div>
             
-            {/* <div className="w-full">
+            <div className="w-full">
             {
                 currentData.map((header, index) => (
                   <div key={`${header} ${index}`}>
-                    <div className="bg-blue-200 flex rounded-t-md border border-y-slate-300 min-h-10 max-h-32 items-center py-2 mt-4" key={index}>
+                    <div className="bg-blue-200 flex rounded-t-md border border-y-slate-300 min-h-10 max-h-32 items-center py-2 mt-4">
                         <p className="px-10 w-12 text-left">{(currentPage - 1) * itemsPerPage + index + 1}</p>
                         <p className="px-10 text-left" >{header}</p>
                     </div>
-                    <div className="bg-white flex rounded-b-md border border-y-slate-300 min-h-10 max-h-32 items-center py-2 mb-4" key={index}>
-                        <p className="px-10 w-12 text-left">{(currentPage - 1) * itemsPerPage + index + 1}</p>
-                        {headData.qtype.map((option, opIndex) => (<p className="px-2 text-left" >{option[index][opIndex]}</p>))}
+                    <div className="px-20 bg-white flex rounded-b-md border border-y-slate-300 min-h-10  items-center py-2 mb-4">
+                        {qtypeList[index].length > 1 ? (
+                          <>
+                            <div style={{ width: '800px', height: '400px' }}>
+                            <Bar
+                              data={{
+                                labels: dataOption[index],
+                                datasets: [
+                                  {
+                                    label: header,
+                                    data: dataCountOption[index],
+                                    backgroundColor: "rgba(75,192,192,0.4)",
+                                    borderColor: "rgba(75,192,192,1)",
+                                    borderWidth: 1,
+                                  },
+                                ],
+                              }}
+                              options={{
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                  datalabels: {
+                                    display: true,
+                                    color: 'black',
+                                    align: 'end',
+                                    anchor: 'end',
+                                    align: 'start', 
+                                    formatter: (value, context) => {
+                                      return value;
+                                    },
+                                    offset: 10, 
+                                  },
+                                  tooltip: {
+                                    callbacks: {
+                                      title: function (tooltipItem) {
+                                        return tooltipItem[0].label;
+                                      },
+                                    },
+                                  },
+                                },
+                                scales: {
+                                  x: {
+                                    beginAtZero: true,
+                                  },
+                                  y: {
+                                    beginAtZero: true,
+                                  },
+                                },
+                              }}
+                            />
+                            </div>
+                          </>
+                        ) : (
+                          null
+                        )}
                     </div>
                   </div>
                 ))
@@ -243,7 +326,7 @@ export default function AnalyzeResponse() {
                 ))}
                 </ul>
             </nav>
-            </div> */}
+            </div>
         </div>
       </div>
     </>

@@ -275,6 +275,7 @@ export default function ResponseDetail() {
                 onChange={date => setStartDate(date)}
                 dateFormat="yyyy-MM-dd"
                 className="border p-2 rounded w-full bg-blue-200 font-bold text-center"
+                placeholderText="yyyy-mm-dd"
               />
             </div>
             <div className="flex justify-between mb-4 w-full px-10">
@@ -284,11 +285,12 @@ export default function ResponseDetail() {
                 onChange={date => setEndDate(date)}
                 dateFormat="yyyy-MM-dd"
                 className="border p-2 rounded w-full bg-blue-200 font-bold text-center"
+                placeholderText="yyyy-mm-dd"
               />
             </div>
             <div className="flex justify-center mb-4">
               <button onClick={() => setShowDatePicker(false)} className="w-24 bg-[#577BC1] hover:bg-gray-400 text-white tracking-widest font-semibold py-2 px-4 mr-4 rounded">Cancel</button>
-              <button onClick={handleExport} className="w-24 bg-[#577BC1] hover:bg-gray-400 text-white tracking-widest font-semibold py-2 px-4 rounded">Export</button>
+              <button onClick={handleExport} className="w-24 bg-[#577BC1] hover:bg-green-800 text-white tracking-widest font-semibold py-2 px-4 rounded">Export</button>
             </div>
             <div className="w-full bg-blue-200 px-6 py-2 rounded-b"><p className="text-gray-900 font-semibold text-center">Export file will be in .xlsx format</p></div>
           </div>
