@@ -266,30 +266,31 @@ export default function ResponseDetail() {
 
       {showDatePicker && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white p-6 rounded shadow-lg">
-            <h2 className="text-xl font-bold mb-4">Select Date Range</h2>
-            <div className="flex flex-col mb-4">
-              <label className="mb-2">Start Date:</label>
+          <div className="bg-blue-100 items-center justify-center rounded shadow-md max-w-md w-96">
+            <h2 className="pt-4 text-center text-xl font-bold mb-4 tracking-widest">Choose Period</h2>
+            <div className="flex justify-between mb-4 w-full px-10">
+              <label className="w-2/3 pl-4 flex items-center tracking-widest font-bold">From</label>
               <DatePicker
                 selected={startDate}
                 onChange={date => setStartDate(date)}
                 dateFormat="yyyy-MM-dd"
-                className="border p-2 rounded"
+                className="border p-2 rounded w-full bg-blue-200 font-bold text-center"
               />
             </div>
-            <div className="flex flex-col mb-4">
-              <label className="mb-2">End Date:</label>
+            <div className="flex justify-between mb-4 w-full px-10">
+              <label className="w-2/3 pl-4 flex items-center tracking-widest font-bold">To</label>
               <DatePicker
                 selected={endDate}
                 onChange={date => setEndDate(date)}
                 dateFormat="yyyy-MM-dd"
-                className="border p-2 rounded"
+                className="border p-2 rounded w-full bg-blue-200 font-bold text-center"
               />
             </div>
-            <div className="flex justify-end">
-              <button onClick={handleExport} className="bg-blue-500 text-white px-4 py-2 rounded mr-2">Export</button>
-              <button onClick={() => setShowDatePicker(false)} className="bg-gray-500 text-white px-4 py-2 rounded">Cancel</button>
+            <div className="flex justify-center mb-4">
+              <button onClick={() => setShowDatePicker(false)} className="w-24 bg-[#577BC1] hover:bg-gray-400 text-white tracking-widest font-semibold py-2 px-4 mr-4 rounded">Cancel</button>
+              <button onClick={handleExport} className="w-24 bg-[#577BC1] hover:bg-gray-400 text-white tracking-widest font-semibold py-2 px-4 rounded">Export</button>
             </div>
+            <div className="w-full bg-blue-200 px-6 py-2 rounded-b"><p className="text-gray-900 font-semibold text-center">Export file will be in .xlsx format</p></div>
           </div>
         </div>
       )}
