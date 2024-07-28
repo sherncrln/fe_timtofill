@@ -77,6 +77,7 @@ export default function AnalyzeResponse() {
     console.log("HEADER : ",header);
     console.log("qTYPE : ",qtypeList);
     console.log("ini adalah answer ajaaa", answer);
+    console.log("ini adalah answer.header ajaaa", answer["Jenis Kelamin"]);
   }
   
   const processHeaderData = () => {
@@ -104,7 +105,7 @@ export default function AnalyzeResponse() {
         console.error("Error parsing header data:", error);
       }
     }
-    // console.log("ini adalah header ajaaa", header);
+    console.log("ini adalah QTYPE ajaaa", qtypeList);
   };
   
   function getAnswer(){
@@ -134,7 +135,14 @@ export default function AnalyzeResponse() {
     header.forEach((question, index) => {
       const qtype = qtypeList[index][0];
       if (["dropdown", "checkbox", "radio", "radio-rating"].includes(qtype)) {
-        const optionValues = qtypeList[index].slice(1);
+        let optionValues;
+        
+        if (qtype === "radio-rating") {
+          optionValues = ["Sangat Baik", "Baik", "Cukup", "Kurang", "Sangat Kurang"];
+        } else {
+          optionValues = qtypeList[index].slice(1);
+        }
+        
         options.push(optionValues);
         
         const countValues = optionValues.map(option => 0);
@@ -151,7 +159,8 @@ export default function AnalyzeResponse() {
             });
           }
         });
-
+        
+        console.log("optionValues: ", optionValues, index);
         counts.push(countValues);
       } else {
         options.push(['']);
@@ -163,17 +172,6 @@ export default function AnalyzeResponse() {
     setDataCountOption(counts);
     console.log("DataOption: ", options);
     console.log("DataCountOption: ", counts);
-  };
-
-  const data = {
-    labels: ["first", "second", "third", "4th", "5th"],
-    datasets: [
-      {
-        label: "First set",
-        data: [1, 2, 4, 8, 20],
-        backgroundColor: "blue"
-      }
-    ]
   };
 
   const totalPages = Math.ceil(header.length / itemsPerPage);
@@ -193,126 +191,86 @@ export default function AnalyzeResponse() {
           <div className="flex justify-between w-full mb-4">
               <h1 className="flex items-center w-10/12 h-24 text-3xl text-blue-800 font-semibold bg-transparent text-wrap">Analyze : {headData.name_form}</h1>
               <div className="w-3/12 flex items-center gap-x-1 justify-end">
-                  <button  className="w-32 h-8 rounded bg-[#577BC1] tracking-widest text-sm text-[#f8fafc]">Export</button>
-                  <button onClick={backToResponseList} className="w-32 h-8 rounded bg-[#577BC1] tracking-widest text-sm text-[#f8fafc]">Back</button>
+                <button onClick={handleSubmit} className="w-32 h-8 rounded bg-[#577BC1] tracking-widest text-sm text-[#f8fafc] justify-end">Apply</button>
+                <button onClick={backToResponseList} className="w-32 h-8 rounded bg-[#577BC1] tracking-widest text-sm text-[#f8fafc]">Back</button>
               </div>
           </div>
           <div className="w-full overflow-x-auto scrollbar-thin scrollbar-thumb-blue-700 scrollbar-track-blue-300">
-            <div className="w-full flex h-12 bg-blue-300 text-blue-950 font-semibold items-center rounded">
-                <div className="w-3/5 flex">
-                    <h1 className="pl-12 pr-4">Period</h1>
-                    <input type="date" className="px-2 bg-gray-300 rounded" name="period_from"/>
-                    <h1 className="px-4">to</h1>
-                    <input type="date" className="px-2 bg-gray-300 rounded" name="period_to"/>
-                </div>
-                <div className="w-2/5 flex justify-end mr-10">
-                    <label className="px-4">
-                    <input 
-                            type="radio"
-                            name="sumby" 
-                            onChange={handleSumBy} 
-                            value="Question" 
-                        /> Sum by Question
-                    </label>
-                    {headData.qtype?.includes("multi-rating") && headData.respondent == "Mahasiswa"? (
-                      <label className="px-4">
-                          <input 
-                              type="radio" 
-                              name="sumby" 
-                              onChange={handleSumBy} 
-                              value="Dosen" 
-                          /> Sum by Variable
-                      </label>
-                    ) : headData.qtype?.includes("multi-rating") && headData.respondent == "Dosen"? (
-                      <label className="px-4">
-                          <input 
-                              type="radio" 
-                              name="sumby" 
-                              onChange={handleSumBy} 
-                              value="Class"
-                          /> Sum by Class
-                      </label>
-                    ) : null }
-                </div>
-            </div>
-            <div className="w-full py-4 flex justify-end">
-              <button onClick={handleSubmit} className="w-32 h-8 rounded bg-[#577BC1] tracking-widest text-sm text-[#f8fafc] justify-end">Apply</button>
-            </div>
-            <div className="w-full py-4 flex items-center justify-center">
-              
-            </div>
-            </div>
-            
-            <div className="w-full">
-            {
-                currentData.map((header, index) => (
+          </div>
+          <div className="w-full">
+            {currentData.map((header, index) => (
                   <div key={`${header} ${index}`}>
                     <div className="bg-blue-200 flex rounded-t-md border border-y-slate-300 min-h-10 max-h-32 items-center py-2 mt-4">
                         <p className="px-10 w-12 text-left">{(currentPage - 1) * itemsPerPage + index + 1}</p>
                         <p className="px-10 text-left" >{header}</p>
                     </div>
                     <div className="px-20 bg-white flex rounded-b-md border border-y-slate-300 min-h-10  items-center py-2 mb-4">
-                        {qtypeList[index].length > 1 ? (
-                          <>
-                            <div style={{ width: '800px', height: '400px' }}>
-                            <Bar
-                              data={{
-                                labels: dataOption[index],
-                                datasets: [
-                                  {
-                                    label: header,
-                                    data: dataCountOption[index],
-                                    backgroundColor: "rgba(75,192,192,0.4)",
-                                    borderColor: "rgba(75,192,192,1)",
-                                    borderWidth: 1,
-                                  },
-                                ],
-                              }}
-                              options={{
-                                responsive: true,
-                                maintainAspectRatio: false,
-                                plugins: {
-                                  datalabels: {
-                                    display: true,
-                                    color: 'black',
-                                    align: 'end',
-                                    anchor: 'end',
-                                    align: 'start', 
-                                    formatter: (value, context) => {
-                                      return value;
+                          {((qtypeList[index][0] == "radio") || (qtypeList[index][0] == "radio-rating") ||(qtypeList[index][0] == "dropdown") || (qtypeList[index][0] == "checkbox") )? (
+                            <>
+                              <div style={{ width: '800px', height: '400px' }}>
+                              <Bar
+                                data={{
+                                  labels: dataOption[index],
+                                  datasets: [
+                                    {
+                                      label: header,
+                                      data: dataCountOption[index],
+                                      backgroundColor: "rgba(75,192,192,0.4)",
+                                      borderColor: "rgba(75,192,192,1)",
+                                      borderWidth: 1,
                                     },
-                                    offset: 10, 
-                                  },
-                                  tooltip: {
-                                    callbacks: {
-                                      title: function (tooltipItem) {
-                                        return tooltipItem[0].label;
+                                  ],
+                                }}
+                                options={{
+                                  responsive: true,
+                                  maintainAspectRatio: false,
+                                  plugins: {
+                                    datalabels: {
+                                      display: true,
+                                      color: 'black',
+                                      align: 'end',
+                                      anchor: 'end',
+                                      align: 'start', 
+                                      formatter: (value, context) => {
+                                        return value;
+                                      },
+                                      offset: 10, 
+                                    },
+                                    tooltip: {
+                                      callbacks: {
+                                        title: function (tooltipItem) {
+                                          return tooltipItem[0].label;
+                                        },
                                       },
                                     },
                                   },
-                                },
-                                scales: {
-                                  x: {
-                                    beginAtZero: true,
+                                  scales: {
+                                    x: {
+                                      beginAtZero: true,
+                                    },
+                                    y: {
+                                      beginAtZero: true,
+                                    },
                                   },
-                                  y: {
-                                    beginAtZero: true,
-                                  },
-                                },
-                              }}
-                            />
-                            </div>
-                          </>
-                        ) : (
-                          null
-                        )}
+                                }}
+                              />
+                              {qtypeList[index][0]}
+                              </div>
+                            </>
+                          ) : (
+                            <div className="flex flex-col w-full mb-4 max-h-48 overflow-y-auto scrollbar-thin ">
+                            {answer.map((ans, index) => (
+                              <p key={index} className="border-b-2 py-1">{ans[header]} {qtypeList[index][0]} {index}</p>
+                            ))}
+                          </div>
+                          )}
                     </div>
                   </div>
                 ))
             }
             </div>
             <div className="flex justify-center mt-4">
-            <nav>
+              <nav>
                 <ul className="flex list-none">
                 {[...Array(totalPages)].map((_, index) => (
                     <li key={index} className="mx-1">
@@ -325,7 +283,7 @@ export default function AnalyzeResponse() {
                     </li>
                 ))}
                 </ul>
-            </nav>
+              </nav>
             </div>
         </div>
       </div>

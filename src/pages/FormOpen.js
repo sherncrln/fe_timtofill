@@ -157,7 +157,7 @@ export default function FormOpen() {
                 axios.post(`http://localhost/timetofill/response.php/`, JSON.stringify(resSubmit))
                 .then(function (response) {
                     console.log(response.data);
-                    backToHomePage(); 
+                    //backToHomePage(); 
                 })
                 .catch(function (error) {
                     console.error("There was an error!", error);
@@ -457,7 +457,7 @@ function Question({ index, quest, type, parameter, handleChange, paramDetail, pa
                                 ))}    
                             </div>
                             {subQuestions.map((subQuestion, subIndex) => (
-                                <div key={subIndex} className="flex w-full border-b border-gray-400">
+                                <div key={subIndex} className="flex w-full border-b border-gray-400 overflow-x-auto scrollbar-thin">
                                     <div className="w-6/12">
                                         <p
                                             key={subIndex}

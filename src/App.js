@@ -17,6 +17,9 @@ import FormOpen from './pages/FormOpen';
 import HistoryList from './pages/HistoryList';
 import HistoryDetail from './pages/HistoryDetail.js';
 import AnalyzeResponse from './pages/AnalyzeResponse.js';
+import EDOMDetail from './pages/EDOMDetail.js';
+import EDOMDetailView from './pages/EDOMDetailView.js';
+import EMODDetail from './pages/EMODDetail.js';
 
 function App() {
   return (
@@ -39,6 +42,9 @@ function App() {
             <Route path="/history" element={<Protected Component={HistoryList} />} />
             <Route path="/history/:id/view" element={<Protected Component={HistoryDetail} />} />
             <Route path="/analyze/:id/view" element={<Protected Component={AnalyzeResponse} />} />
+            <Route path="/edom/:id" element={<Protected Component={EDOMDetail} />} />
+            <Route path="/edom/:id/view" element={<Protected Component={EDOMDetailView} />} />
+            <Route path="/emod/:id" element={<Protected Component={EMODDetail} />} />
           </Routes>
       </Router>
     </div>
