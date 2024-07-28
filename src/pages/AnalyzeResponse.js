@@ -13,7 +13,6 @@ import { Bar } from "react-chartjs-2";
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 import NavBar from "../components/NavBar";
 import axios from "axios";
-import { PDFDownloadLink, Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
 
 
 ChartJS.register(
@@ -24,50 +23,6 @@ ChartJS.register(
   Tooltip,
   Legend,
   ChartDataLabels
-);
-
-const styles = StyleSheet.create({
-  page: {
-    padding: 10,
-  },
-  section: {
-    margin: 10,
-    padding: 10,
-    flexGrow: 1,
-  },
-  header: {
-    fontSize: 14,
-    marginBottom: 10,
-  },
-  text: {
-    fontSize: 12,
-    marginBottom: 5,
-  }
-});
-
-const PDFDocument = ({ data = [], headers = [], qtypes = [], options = [], counts = [] }) => (
-  <Document>
-    <Page size="A4" style={styles.page}>
-      {headers.map((header, index) => (
-        <View key={index} style={styles.section}>
-          <Text style={styles.header}>{header}</Text>
-          {(qtypes[index] && ["radio", "radio-rating", "dropdown", "checkbox"].includes(qtypes[index][0])) ? (
-            <View>
-              {options[index] && options[index].map((option, optIndex) => (
-                <Text key={optIndex} style={styles.text}>{option}: {counts[index][optIndex]}</Text>
-              ))}
-            </View>
-          ) : (
-            <View>
-              {data.map((ans, aIndex) => (
-                <Text key={aIndex} style={styles.text}>{ans[header]}</Text>
-              ))}
-            </View>
-          )}
-        </View>
-      ))}
-    </Page>
-  </Document>
 );
 
 export default function AnalyzeResponse() {
@@ -215,19 +170,6 @@ export default function AnalyzeResponse() {
           <div className="flex justify-between w-full mb-4">
               <h1 className="flex items-center w-10/12 h-24 text-3xl text-blue-800 font-semibold bg-transparent text-wrap">Analyze : {headData.name_form}</h1>
               <div className="w-3/12 flex items-center gap-x-1 justify-end">
-                <PDFDownloadLink
-                  document={<PDFDocument
-                    data={answer}
-                    headers={header}
-                    qtypes={qtypeList}
-                    options={dataOption}
-                    counts={dataCountOption}
-                  />}
-                  fileName="analyze_response.pdf"
-                  className="w-32 h-8 rounded bg-[#577BC1] tracking-widest text-sm text-[#f8fafc] flex items-center justify-center"
-                >
-                  {({ loading }) => (loading ? 'Loading document...' : 'Export')}
-                </PDFDownloadLink>
                 <button onClick={backToResponseList} className="w-32 h-8 rounded bg-[#577BC1] tracking-widest text-sm text-[#f8fafc]">Back</button>
               </div>
           </div>
@@ -286,6 +228,7 @@ export default function AnalyzeResponse() {
                             },
                           }}
                         />
+                        {header}
                       </div>
                     </>
                   ) : (
