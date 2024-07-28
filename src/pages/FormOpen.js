@@ -157,7 +157,7 @@ export default function FormOpen() {
                 axios.post(`http://localhost/timetofill/response.php/`, JSON.stringify(resSubmit))
                 .then(function (response) {
                     console.log(response.data);
-                    //backToHomePage(); 
+                    backToHomePage(); 
                 })
                 .catch(function (error) {
                     console.error("There was an error!", error);

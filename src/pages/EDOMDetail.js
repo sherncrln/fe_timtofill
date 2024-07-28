@@ -10,6 +10,7 @@ export default function EDOMDetail() {
   const [responseList, setResponseList] = useState([]);
   const [headData, setHeadData] = useState([]);
   const [header, setHeader] = useState([]);
+  const [dosenHeader, setDosenHeader] = useState([]);
   const [answer, setAnswer] = useState({});
   const [currentPage, setCurrentPage] = useState(1);
   const [parameter, setCheckParameter] = useState({
@@ -20,6 +21,7 @@ export default function EDOMDetail() {
   const itemsPerPage = 20;
   const navigate = useNavigate();
   const [statusEDOM, setStatusEDOM] = useState("On Process");
+  const [publishDate, setPublishDate] = useState("");
   const [dosen, setDosen] = useState([]);
   const [noSurat, setNoSurat] = useState([]);
 
@@ -30,7 +32,6 @@ export default function EDOMDetail() {
   useEffect(() => {
     getResponseList();
     getDosenList();
-    console.log("ini merupakan response", responseList);
   }, [currentPage]);
   
   useEffect(() => {
@@ -67,7 +68,19 @@ export default function EDOMDetail() {
           }
         });
 
+        const dHeader = headerArray.flatMap((itemArray, index) => {
+          if (qtypeArray[index] == "multi-rating") {
+            if(parameter.status == "Dosen" || parameter.status == "Class"){
+              const p = parameter.paramList;
+              return p.map(param => `${param} ${itemArray[0]}`);
+            }
+          }else{
+            return[];
+          }
+        });
+
         setHeader(firstItemHeaders);
+        setDosenHeader(dHeader);
         
         // if(parameter.status == ""){
         //   setHeader(headerArray);
@@ -88,6 +101,8 @@ export default function EDOMDetail() {
     }    
     console.log("ini merupakan headData", headData);
     console.log("ini merupakan HEADER", header);
+    console.log("ini merupakan response", responseList);
+    console.log("ini merupakan dHeader", dosenHeader);
   }, [headData, parameter]);
   
   useEffect(() => {
@@ -173,15 +188,15 @@ export default function EDOMDetail() {
           </div>
           <div className="flex w=full mb-4 justify-start text-blue-950">
             <p><b>Status : </b> {statusEDOM}</p>
-            <p className="px-8"><b>Published : </b> {statusEDOM}</p>
+            <p className="px-8"><b>Published : </b> {publishDate}</p>
           </div>
           <div className="w-full overflow-x-auto scrollbar-thin scrollbar-thumb-blue-700 scrollbar-track-blue-300">
-            <table className="min-w-full align-middle table-auto text-left overflow text-sm">
+            <table className="min-w-full align-middle table-auto text-left overflow-x-auto scrollbar-thin text-sm">
               <thead className="h-10 max-h-24 overflow-hidden bg-[#577BC1] text-center text-[#f8fafc] font-normal">
                 <tr className="align-middle">
                   <th scope="col" className="w-12">#</th>
                   <th scope="col" className="w-20">Username</th>
-                  <th scope="col" className="min-w-48">Nama</th>                  
+                  <th scope="col" className="w-48">Nama</th>                  
                   {
                     header.map((header, index) => (
                       <th key={index} scope="col" className="w-32" title={header} ><p className="line-clamp-3" >{header}</p></th>
@@ -191,6 +206,7 @@ export default function EDOMDetail() {
                   <th scope="col" className="w-24">Class</th>                  
                   <th scope="col" className="w-24">Result</th>                  
                   <th scope="col" className="w-24">Rank</th>                  
+                  <th scope="col" className="w-24">Predikat</th>                  
                   <th scope="col" className="w-24">Surat</th>                  
                 </tr>
               </thead>

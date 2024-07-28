@@ -85,7 +85,7 @@ export default function ResponseDetail() {
             // Iterate over each key in parsedAnswer
             Object.keys(parsedAnswer).forEach(key => {
                 if (Array.isArray(parsedAnswer[key])) {
-                    parsedAnswer[key] = parsedAnswer[key].join(', ');
+                    parsedAnswer[key] = parsedAnswer[key].join('; ');
                 }
             });
             return parsedAnswer;

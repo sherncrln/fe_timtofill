@@ -13,6 +13,8 @@ import { Bar } from "react-chartjs-2";
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 import NavBar from "../components/NavBar";
 import axios from "axios";
+import { PDFDownloadLink, Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
+
 
 ChartJS.register(
   CategoryScale,
@@ -24,20 +26,59 @@ ChartJS.register(
   ChartDataLabels
 );
 
+const styles = StyleSheet.create({
+  page: {
+    padding: 10,
+  },
+  section: {
+    margin: 10,
+    padding: 10,
+    flexGrow: 1,
+  },
+  header: {
+    fontSize: 14,
+    marginBottom: 10,
+  },
+  text: {
+    fontSize: 12,
+    marginBottom: 5,
+  }
+});
+
+const PDFDocument = ({ data = [], headers = [], qtypes = [], options = [], counts = [] }) => (
+  <Document>
+    <Page size="A4" style={styles.page}>
+      {headers.map((header, index) => (
+        <View key={index} style={styles.section}>
+          <Text style={styles.header}>{header}</Text>
+          {(qtypes[index] && ["radio", "radio-rating", "dropdown", "checkbox"].includes(qtypes[index][0])) ? (
+            <View>
+              {options[index] && options[index].map((option, optIndex) => (
+                <Text key={optIndex} style={styles.text}>{option}: {counts[index][optIndex]}</Text>
+              ))}
+            </View>
+          ) : (
+            <View>
+              {data.map((ans, aIndex) => (
+                <Text key={aIndex} style={styles.text}>{ans[header]}</Text>
+              ))}
+            </View>
+          )}
+        </View>
+      ))}
+    </Page>
+  </Document>
+);
+
 export default function AnalyzeResponse() {
   const [responseList, setResponseList] = useState([]);
   const [headData, setHeadData] = useState([]);
   const [header, setHeader] = useState([]);
   const [qtypeList, setQtypeList] = useState([]);
-  const [answer, setAnswer] = useState({});
+  const [answer, setAnswer] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [sumby, setSumBy] = useState("Question");
   const [dataOption, setDataOption] = useState([]);
   const [dataCountOption, setDataCountOption] = useState([]);
-  const [parameter, setCheckParameter] = useState({
-    status : "",
-    paramList : [],
-  });
   const { id } = useParams();
   const itemsPerPage = 20;
   const navigate = useNavigate();
@@ -48,8 +89,20 @@ export default function AnalyzeResponse() {
 
   useEffect(() => {
     getResponseList();
+  }, []);
+
+  useEffect(() => {
+    if (headData.question) {
+      processHeaderData();
+    }
   }, [headData]);
-  
+
+  useEffect(() => {
+    if (responseList.length > 0) {
+      getAnswer();
+    }
+  }, [responseList, header, qtypeList]);
+
   function getResponseList() {
     axios.get(`http://localhost/timetofill/response.php?form_id=${id}`).then(function(response) {
       if (response.data) {
@@ -62,66 +115,40 @@ export default function AnalyzeResponse() {
     }).catch(error => {
       console.error("Error fetching data:", error);
     });
-    // console.log("ini merupakan response list", responseList);
-    // console.log("ini merupakan Head Data", headData);
   }
-   
-  const handleSumBy = (event) => {
-    setSumBy(event.target.value);
-  };
-      
-  const handleSubmit = (event)=>{
-    event.preventDefault();
-    processHeaderData();
-    getAnswer();
-    console.log("HEADER : ",header);
-    console.log("qTYPE : ",qtypeList);
-    console.log("ini adalah answer ajaaa", answer);
-    console.log("ini adalah answer.header ajaaa", answer["Jenis Kelamin"]);
-  }
-  
-  const processHeaderData = () => {
-    if (headData.question) {
-      try {
-        const headerString = headData.question;
-        const headerArray = JSON.parse(headerString);
-        const qtypeString = headData.qtype;
-        const qtypeArray = JSON.parse(qtypeString);
 
-        if(headData.qtype?.includes("multi-rating")){
-          const firstItemHeaders = headerArray.flatMap((itemArray, index) => {
-            return itemArray[0];
-          });
-          const firstItemQtype = qtypeArray.flatMap((itemArray, index) => {
-            return JSON.parse(itemArray[0]);
-          });
-          setHeader(firstItemHeaders);
-          setQtypeList(firstItemQtype);
-        }else {
-          setHeader(headerArray);
-          setQtypeList(qtypeArray);
-        }
-      } catch (error) {
-        console.error("Error parsing header data:", error);
+  const processHeaderData = () => {
+    try {
+      const headerArray = JSON.parse(headData.question);
+      const qtypeArray = JSON.parse(headData.qtype);
+
+      if(headData.qtype?.includes("multi-rating")){
+        const firstItemHeaders = headerArray.flatMap((itemArray, index) => itemArray[0]);
+        const firstItemQtype = qtypeArray.flatMap((itemArray, index) => JSON.parse(itemArray[0]));
+        setHeader(firstItemHeaders);
+        setQtypeList(firstItemQtype);
+      } else {
+        setHeader(headerArray);
+        setQtypeList(qtypeArray);
       }
+    } catch (error) {
+      console.error("Error parsing header data:", error);
     }
-    console.log("ini adalah QTYPE ajaaa", qtypeList);
   };
   
   function getAnswer(){
     const newAnswer = responseList.map(response => {
       try {
         const parsedAnswer = JSON.parse(response.answer);
-            // Iterate over each key in parsedAnswer
-            Object.keys(parsedAnswer).forEach(key => {
-                if (Array.isArray(parsedAnswer[key])) {
-                    parsedAnswer[key] = parsedAnswer[key].join(', ');
-                }
-            });
-            return parsedAnswer;
+        Object.keys(parsedAnswer).forEach(key => {
+          if (Array.isArray(parsedAnswer[key])) {
+            parsedAnswer[key] = parsedAnswer[key].join(', ');
+          }
+        });
+        return parsedAnswer;
       } catch (error) {
         console.error("Error parsing answer:", error);
-        return [];
+        return {};
       }
     });
     setAnswer(newAnswer);
@@ -133,7 +160,7 @@ export default function AnalyzeResponse() {
     const counts = [];
 
     header.forEach((question, index) => {
-      const qtype = qtypeList[index][0];
+      const qtype = qtypeList[index] ? qtypeList[index][0] : null;
       if (["dropdown", "checkbox", "radio", "radio-rating"].includes(qtype)) {
         let optionValues;
         
@@ -160,7 +187,6 @@ export default function AnalyzeResponse() {
           }
         });
         
-        console.log("optionValues: ", optionValues, index);
         counts.push(countValues);
       } else {
         options.push(['']);
@@ -170,8 +196,6 @@ export default function AnalyzeResponse() {
 
     setDataOption(options);
     setDataCountOption(counts);
-    console.log("DataOption: ", options);
-    console.log("DataCountOption: ", counts);
   };
 
   const totalPages = Math.ceil(header.length / itemsPerPage);
@@ -191,7 +215,19 @@ export default function AnalyzeResponse() {
           <div className="flex justify-between w-full mb-4">
               <h1 className="flex items-center w-10/12 h-24 text-3xl text-blue-800 font-semibold bg-transparent text-wrap">Analyze : {headData.name_form}</h1>
               <div className="w-3/12 flex items-center gap-x-1 justify-end">
-                <button onClick={handleSubmit} className="w-32 h-8 rounded bg-[#577BC1] tracking-widest text-sm text-[#f8fafc] justify-end">Apply</button>
+                <PDFDownloadLink
+                  document={<PDFDocument
+                    data={answer}
+                    headers={header}
+                    qtypes={qtypeList}
+                    options={dataOption}
+                    counts={dataCountOption}
+                  />}
+                  fileName="analyze_response.pdf"
+                  className="w-32 h-8 rounded bg-[#577BC1] tracking-widest text-sm text-[#f8fafc] flex items-center justify-center"
+                >
+                  {({ loading }) => (loading ? 'Loading document...' : 'Export')}
+                </PDFDownloadLink>
                 <button onClick={backToResponseList} className="w-32 h-8 rounded bg-[#577BC1] tracking-widest text-sm text-[#f8fafc]">Back</button>
               </div>
           </div>
@@ -199,92 +235,86 @@ export default function AnalyzeResponse() {
           </div>
           <div className="w-full">
             {currentData.map((header, index) => (
-                  <div key={`${header} ${index}`}>
-                    <div className="bg-blue-200 flex rounded-t-md border border-y-slate-300 min-h-10 max-h-32 items-center py-2 mt-4">
-                        <p className="px-10 w-12 text-left">{(currentPage - 1) * itemsPerPage + index + 1}</p>
-                        <p className="px-10 text-left" >{header}</p>
-                    </div>
-                    <div className="px-20 bg-white flex rounded-b-md border border-y-slate-300 min-h-10  items-center py-2 mb-4">
-                          {((qtypeList[index][0] == "radio") || (qtypeList[index][0] == "radio-rating") ||(qtypeList[index][0] == "dropdown") || (qtypeList[index][0] == "checkbox") )? (
-                            <>
-                              <div style={{ width: '800px', height: '400px' }}>
-                              <Bar
-                                data={{
-                                  labels: dataOption[index],
-                                  datasets: [
-                                    {
-                                      label: header,
-                                      data: dataCountOption[index],
-                                      backgroundColor: "rgba(75,192,192,0.4)",
-                                      borderColor: "rgba(75,192,192,1)",
-                                      borderWidth: 1,
-                                    },
-                                  ],
-                                }}
-                                options={{
-                                  responsive: true,
-                                  maintainAspectRatio: false,
-                                  plugins: {
-                                    datalabels: {
-                                      display: true,
-                                      color: 'black',
-                                      align: 'end',
-                                      anchor: 'end',
-                                      align: 'start', 
-                                      formatter: (value, context) => {
-                                        return value;
-                                      },
-                                      offset: 10, 
-                                    },
-                                    tooltip: {
-                                      callbacks: {
-                                        title: function (tooltipItem) {
-                                          return tooltipItem[0].label;
-                                        },
-                                      },
-                                    },
+              <div key={`${header} ${index}`}>
+                <div className="bg-blue-200 flex rounded-t-md border border-y-slate-300 min-h-10 max-h-32 items-center py-2 mt-4">
+                    <p className="px-10 w-12 text-left">{(currentPage - 1) * itemsPerPage + index + 1}</p>
+                    <p className="px-10 text-left" >{header}</p>
+                </div>
+                <div className="px-20 bg-white flex rounded-b-md border border-y-slate-300 min-h-10  items-center py-2 mb-4">
+                  {(qtypeList[index] && ["radio", "radio-rating", "dropdown", "checkbox"].includes(qtypeList[index][0])) ? (
+                    <>
+                      <div style={{ width: '800px', height: '400px' }}>
+                        <Bar
+                          data={{
+                            labels: dataOption[index],
+                            datasets: [
+                              {
+                                label: header,
+                                data: dataCountOption[index],
+                                backgroundColor: "rgba(75,192,192,0.4)",
+                                borderColor: "rgba(75,192,192,1)",
+                                borderWidth: 1,
+                              },
+                            ],
+                          }}
+                          options={{
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                              datalabels: {
+                                display: true,
+                                color: 'black',
+                                align: 'end',
+                                anchor: 'start',
+                                formatter: (value, context) => value,
+                              },
+                              tooltip: {
+                                callbacks: {
+                                  title: function (tooltipItem) {
+                                    return tooltipItem[0].label;
                                   },
-                                  scales: {
-                                    x: {
-                                      beginAtZero: true,
-                                    },
-                                    y: {
-                                      beginAtZero: true,
-                                    },
-                                  },
-                                }}
-                              />
-                              {qtypeList[index][0]}
-                              </div>
-                            </>
-                          ) : (
-                            <div className="flex flex-col w-full mb-4 max-h-48 overflow-y-auto scrollbar-thin ">
-                            {answer.map((ans, index) => (
-                              <p key={index} className="border-b-2 py-1">{ans[header]} {qtypeList[index][0]} {index}</p>
-                            ))}
-                          </div>
-                          )}
+                                },
+                              },
+                            },
+                            scales: {
+                              x: {
+                                beginAtZero: true,
+                              },
+                              y: {
+                                beginAtZero: true,
+                              },
+                            },
+                          }}
+                        />
+                      </div>
+                    </>
+                  ) : (
+                    <div className="flex flex-col w-full mb-4 max-h-48 overflow-y-auto scrollbar-thin ">
+                      {answer.map((ans, aIndex) => (
+                        <p key={aIndex} className="border-b-2 py-1">{ans[header]}</p>
+                      ))}
                     </div>
-                  </div>
-                ))
-            }
-            </div>
-            <div className="flex justify-center mt-4">
-              <nav>
-                <ul className="flex list-none">
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="flex justify-center mt-4">
+            <nav>
+              <ul className="flex list-none">
                 {[...Array(totalPages)].map((_, index) => (
-                    <li key={index} className="mx-1">
+                  <li key={index} className="mx-1">
                     <button
                       onClick={() => paginate(index + 1)}
                       className={`px-3 py-1 rounded ${currentPage === index + 1 ? 'bg-[#577BC1] text-white' : 'bg-white text-gray-700'}`}
                     >
                       {index + 1}
                     </button>
-                    </li>
+                  </li>
                 ))}
-                </ul>
-              </nav>
-            </div>
+              </ul>
+            </nav>
+          </div>
         </div>
       </div>
     </>
