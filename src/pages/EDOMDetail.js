@@ -11,6 +11,7 @@ export default function EDOMDetail() {
   const [headData, setHeadData] = useState([]);
   const [header, setHeader] = useState([]);
   const [dosenHeader, setDosenHeader] = useState([]);
+  const [newHeaderData, setNewHeaderData] = useState([]);
   const [answer, setAnswer] = useState({});
   const [currentPage, setCurrentPage] = useState(1);
   const [parameter, setCheckParameter] = useState({
@@ -99,10 +100,10 @@ export default function EDOMDetail() {
         console.error("Error parsing header data:", error);
       }
     }    
-    console.log("ini merupakan headData", headData);
-    console.log("ini merupakan HEADER", header);
-    console.log("ini merupakan response", responseList);
-    console.log("ini merupakan dHeader", dosenHeader);
+    // console.log("ini merupakan headData", headData);
+    // console.log("ini merupakan HEADER", header);
+    // console.log("ini merupakan response", responseList);
+    // console.log("ini merupakan dHeader", dosenHeader);
   }, [headData, parameter]);
   
   useEffect(() => {
@@ -122,7 +123,7 @@ export default function EDOMDetail() {
       }
     });
     setAnswer(newAnswer);
-    console.log("ini adalah answer ajaaa", answer);
+    // console.log("ini adalah answer ajaaa", answer);
   }, [responseList]);
   
   function getDosenList(){
@@ -170,6 +171,64 @@ export default function EDOMDetail() {
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
+  const cleanDataKeys = (data) => {
+    const cleanedData = {};
+  
+    Object.entries(data).forEach(([key, value]) => {
+      // Remove numbers and spaces from the beginning of the key
+      const cleanedKey = key.replace(/^\d+\s*/, '');
+      cleanedData[cleanedKey] = value;
+    });
+  
+    return cleanedData;
+  };
+
+  const handleFilterScore = (headerItem, dosen) =>{
+    var filteredData = {}
+    answer.forEach((row, index)=>{
+      filteredData = Object.entries(row)
+      .filter(([key]) => key.includes(headerItem && dosen))
+      .map(([key, values]) => {
+        var sum = 0
+        for (let i = 0; i < values.split(", ").length; i++) {
+          sum += parseInt(values.split(", ")[i]);
+        }
+        return sum
+        // return (
+        //   <div key={key} className="text-center">
+        //     {sum}
+        //   </div>
+        // )
+      });
+    })
+    handleTotal(filteredData)
+    // setNewHeaderData(filteredData[1])
+    return filteredData[1]
+  }
+
+  const handleTotal = (dosen) =>{
+
+      var totalValue = 0
+      header.map(rows=>{
+        answer.forEach((row, index)=>{
+          totalValue = Object.entries(row)
+          .filter(([key]) => key.includes(rows, dosen))
+          .map(([key, values]) => {
+            var sum = 0
+            for (let i = 0; i < values.split(", ").length; i++) {
+              sum += parseInt(values.split(", ")[i]);
+            } 
+            return sum
+          });
+        })
+      })
+      var totalResult = 0
+      for (let i = 0; i < totalValue.length; i++) {
+        console.log(totalValue[i])
+        totalResult += parseInt(totalValue[i]);
+      }
+      return totalResult
+  }
 
   return (
     <>
@@ -217,7 +276,14 @@ export default function EDOMDetail() {
                       <td className="w-12 text-center ">{(currentPage - 1) * itemsPerPage + index + 1}</td>
                       <td className="border border-gray-300 text-center ">{dosen.username}</td>
                       <td className="text-center border border-gray-300">{dosen.name}</td>                        
-                      
+                      {header.map((headerItem, ansIndex) => (
+                        <td key={ansIndex} scope="col" className="text-center border border-gray-300 px-2">
+                          {handleFilterScore(headerItem, dosen.username) || 0}
+                        </td>
+                      ))}
+                      <td className="text-center border border-gray-300">
+                        {handleTotal(dosen.username)}
+                      </td>
                     </tr>
                   ))
                 }
