@@ -228,7 +228,6 @@ export default function AnalyzeResponse() {
                             },
                           }}
                         />
-                        {header}
                       </div>
                     </>
                   ) : (
