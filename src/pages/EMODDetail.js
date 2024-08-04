@@ -138,7 +138,10 @@ export default function EDOMDetail() {
 
   function getClassData() {
     axios.get('http://localhost/timetofill/class.php').then(function (response) {
-      setClassData(response.data);
+      const filteredData = response.data.filter(item => 
+        item.class !== 'DOSEN' && item.class !== 'STAFF' && item.class !== 'ADMIN'
+      );
+      setClassData(filteredData);
     });
   }
 
@@ -163,24 +166,24 @@ export default function EDOMDetail() {
     return count > 0 ? (totalSum / count).toFixed(2) : 0.00;
   };
 
-  const handleTotal = (dosen) => {
+  const handleTotal = (data) => {
     let totalSum = 0;
 
     header.forEach(headerItem => {
       // Konversi hasil ke angka sebelum penjumlahan
-      totalSum += parseFloat(handleFilterScore(headerItem, dosen));
+      totalSum += parseFloat(handleFilterScore(headerItem, data));
     });
 
     // Format total dengan dua angka desimal
     return totalSum.toFixed(2);
   };
 
-  const handleResult = (dosen) => {
-    const total = handleTotal(dosen);
+  const handleResult = (data) => {
+    const total = handleTotal(data);
     return (total / 4).toFixed(2); // Membagi total dengan 4 dan membulatkan hasilnya
   };
 
-  const countUsernameOccurrences = (username) => {
+  const countClassOccurrences = (data) => {
     let count = 0;
     const today = new Date();
 
@@ -190,7 +193,7 @@ export default function EDOMDetail() {
       if (validToDate > today) {
         for (let i = 1; i <= 6; i++) {
           const variableKey = `variable_${i}`;
-          if (item[variableKey] && item[variableKey].includes(username)) {
+          if (item[variableKey] && item['class'].includes(data)) {
             count++;
           }
         }
@@ -202,20 +205,16 @@ export default function EDOMDetail() {
 
   const exportToXLSX = () => {
     // Membuat array data untuk diekspor
-    const exportData = classData.map((classData, index) => {
+    const exportData = classData.map((data, index) => {
       const row = {
-        // No: (currentPage - 1) * itemsPerPage + index + 1,
-        // Username: dosen.username,
-        // Name: dosen.name,
-        // Total: handleTotal(dosen.username),
-        // Result: handleResult(dosen.username),
-        // Class: countUsernameOccurrences(dosen.username),
-        // Rank: dosen.rank
+        No: (currentPage - 1) * itemsPerPage + index + 1,
+        Class: data.class,
+        Dosen: countClassOccurrences(data.class),
       };
 
       // Tambahkan data header ke dalam baris
       header.forEach((head, headIndex) => {
-        row[head] = handleFilterScore(head, classData.class);
+        row[head] = handleFilterScore(head, data.class);
       });
 
       return row;
@@ -247,10 +246,8 @@ export default function EDOMDetail() {
               <tr>
                 <th className="w-1/12 px-4 py-2 border">No</th>
                 <th className="w-1/12 px-4 py-2 border">Class</th>
-                <th className="w-4/12 px-4 py-2 border">Penilaian</th>
-                {/* <th className="w-4/12 px-4 py-2 border">Total</th> */}
                 <th className="w-1/12 px-4 py-2 border">Dosen</th>
-                <th className="w-1/12 px-4 py-2 border">Result</th>
+                <th className="w-4/12 px-4 py-2 border">Penilaian</th>
               </tr>
             </thead>
             <tbody className="text-sm text-center">
@@ -258,12 +255,10 @@ export default function EDOMDetail() {
                 <tr key={classData.class}>
                   <td className="border px-4 py-2">{(currentPage - 1) * itemsPerPage + index + 1}</td>
                   <td className="border px-4 py-2">{classData.class}</td>
+                  <td className="border px-4 py-2">{countClassOccurrences(classData.class)}</td>
                   {header.map((head, headIndex) => (
                     <td key={headIndex} className="border px-4 py-2">{handleFilterScore(head, classData.class)}</td>
                   ))}
-                  {/* <td className="border px-4 py-2">{handleTotal(classData.class)}</td> */}
-                  {/* <td className="border px-4 py-2">{handleResult(classData.class)}</td>
-                  <td className="border px-4 py-2">{countclassOccurrences(classData.class)}</td> */}
                 </tr>
               ))}
             </tbody>
