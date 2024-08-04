@@ -431,29 +431,34 @@ function Question({ index, quest, type, parameter, handleChange, paramDetail, pa
                             </select>
                         </div>
                     ) : type[index][0] === "multi-rating" ? (
-                        <div className="justify-center items-center">
-                            <div className="flex flex-row pb-2">
-                                <div className="w-6/12"></div>
-                                {(parameter === "Mahasiswa") ? paramName.map((pname, index) => (
-                                    <p key={index} name="multi-rating" className="w-1/12 max-h-16 text-sm text-center font-semibold">{pname}</p>
-                                )): (parameter === "Dosen") && paramDetail.map((param, index) => (
-                                    <p key={index} name="multi-rating" className="w-1/12 max-h-16 text-sm text-center font-semibold">{param}</p>
-                                ))}    
+                        <div className="min-w-full flex justify-center items-center">
+                            <div className="w-6/12 flex flex-col pb-2 ">
+                                <div className="min-h-6 max-h-18"></div>
+                                {subQuestions.map((subQuestion, subIndex) => (
+                                    <div className="flex ">
+                                    <p
+                                        key={subIndex}
+                                        className="py-2 max-h-16 text-sm text-blue-800 font-semibold bg-transparent"
+                                    >{subQuestion || ""}</p>
+                                </div>
+                                ))}
                             </div>
-                            {subQuestions.map((subQuestion, subIndex) => (
-                                <div key={subIndex} className="flex w-full border-b border-gray-400 overflow-x-auto scrollbar-thin">
-                                    <div className="w-6/12">
-                                        <p
-                                            key={subIndex}
-                                            className="py-2 max-h-16 text-sm text-blue-800 font-semibold bg-transparent"
-                                        >{subQuestion || ""}</p>
-                                    </div>
-                                    <div className="w-6/12 flex justify-start items-center">
+                            <div className="w-6/12 flex flex-col overflow-x-auto scrollbar-thin">
+                                <div className="flex flex-col min-w-full overflow">
+                                    <div className="flex w-full overflow">
+                                    {(parameter === "Mahasiswa") ? paramName.map((pname, index) => (
+                                        <p key={index} name="multi-rating" className="max-h-18 min-w-24 text-sm text-center font-semibold">{pname}</p>
+                                    )): (parameter === "Dosen") && paramDetail.map((param, index) => (
+                                        <p key={index} name="multi-rating" className="max-h-18 min-w-24 text-sm text-center font-semibold">{param}</p>
+                                    ))}  
+                                    </div> 
+                                {subQuestions.map((subQuestion, subIndex) => (
+                                    <div key={subIndex} className="flex flex-row w-full justify-start items-center overflow">
                                         {paramDetail.map((param, index) => (
                                             <select
-                                                key={index}
+                                            key={index}
                                                 name={`${param} ${quest[0]}`} 
-                                                className="w-1/6 py-2 text-sm "
+                                                className="w-24 py-2 text-sm "
                                                 value={response[`${param} ${quest[0]}`]?.[subIndex] || ''}
                                                 onChange={(e) => handleMultiRatingChange(param, subIndex, e.target.value)}
                                             >
@@ -466,8 +471,9 @@ function Question({ index, quest, type, parameter, handleChange, paramDetail, pa
                                             </select>
                                         ))}
                                     </div>
+                                ))}
                                 </div>
-                            ))}
+                            </div>
                         </div>
                     ) : (
                         <input disabled

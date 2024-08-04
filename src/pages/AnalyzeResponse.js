@@ -183,16 +183,16 @@ export default function AnalyzeResponse() {
                     <p className="px-10 text-left" >{header}</p>
                 </div>
                 <div className="px-20 bg-white flex rounded-b-md border border-y-slate-300 min-h-10  items-center py-2 mb-4">
-                  {(qtypeList[index] && ["radio", "radio-rating", "dropdown", "checkbox"].includes(qtypeList[index][0])) ? (
+                  {(qtypeList[(currentPage - 1) * itemsPerPage + index ] && ["radio", "radio-rating", "dropdown", "checkbox"].includes(qtypeList[(currentPage - 1) * itemsPerPage + index ][0])) ? (
                     <>
                       <div style={{ width: '800px', height: '400px' }}>
                         <Bar
                           data={{
-                            labels: dataOption[index],
+                            labels: dataOption[(currentPage - 1) * itemsPerPage + index ],
                             datasets: [
                               {
                                 label: header,
-                                data: dataCountOption[index],
+                                data: dataCountOption[(currentPage - 1) * itemsPerPage + index ],
                                 backgroundColor: "rgba(75,192,192,0.4)",
                                 borderColor: "rgba(75,192,192,1)",
                                 borderWidth: 1,

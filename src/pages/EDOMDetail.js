@@ -277,6 +277,24 @@ export default function EDOMDetail() {
     return (total / 4).toFixed(2); // Membagi total dengan 4 dan membulatkan hasilnya
   };
 
+  const handlePredikat = (dosen) => {
+    const result = parseFloat(handleResult(dosen)); // Pastikan result diubah menjadi angka
+  
+    if (result >= 29 && result <= 35) {
+      return "Sangat Baik";
+    } else if (result >= 22 && result <= 28) {
+      return "Baik";
+    } else if (result >= 15 && result <= 21) {
+      return "Cukup";
+    } else if (result >= 8 && result <= 14) {
+      return "Kurang";
+    } else if (result >= 0 && result <= 7) {
+      return "Sangat Kurang";
+    } else {
+      return ""; // Untuk menangani nilai yang tidak termasuk dalam rentang yang diberikan
+    }
+  };
+
   const countUsernameOccurrences = (username) => {
     let count = 0;
     const today = new Date();
@@ -381,7 +399,7 @@ export default function EDOMDetail() {
                   <td className="border px-4 py-2">{handleResult(dosen.username)}</td>
                   <td className="border px-4 py-2">{countUsernameOccurrences(dosen.username)}</td>
                   <td className="border px-4 py-2">{dosen.rank}</td>
-                  <td className="border px-4 py-2">{handleTotal(dosen.username) != 0? "Sangat Baik" : ""}</td>
+                  <td className="border px-4 py-2">{handlePredikat(dosen.username)}</td>
                 </tr>
               ))}
             </tbody>

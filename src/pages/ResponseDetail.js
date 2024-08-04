@@ -152,7 +152,6 @@ export default function ResponseDetail() {
       "Timestamp",
       "Responder",
       "Class",
-      ...header
     ];
   
     const filteredData = responseList.filter(response => {
@@ -181,7 +180,6 @@ export default function ResponseDetail() {
           dataObject[header] = ''; 
         }
       });
-      console.log(headers);
   
       return dataObject;
     });
