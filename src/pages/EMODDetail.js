@@ -3,36 +3,30 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import NavBar from "../components/NavBar";
 import axios from "axios";
 import * as XLSX from "xlsx";
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
 
-export default function EMODDetail() {
+export default function EDOMDetail() {
   const [responseList, setResponseList] = useState([]);
   const [headData, setHeadData] = useState([]);
   const [header, setHeader] = useState([]);
   const [answer, setAnswer] = useState({});
   const [currentPage, setCurrentPage] = useState(1);
   const [parameter, setCheckParameter] = useState({
-    status : "",
-    paramList : [],
+    status: "",
+    paramList: [],
   });
   const { id } = useParams();
   const itemsPerPage = 20;
   const navigate = useNavigate();
-  const [statusEDOM, setStatusEDOM] = useState("On Process");
-  const [classData, setclassData] = useState([]);
-  const [noSurat, setNoSurat] = useState([]);
-
+  const [classData, setClassData] = useState([]);
   const backToResponseList = () => {
     navigate('/response');
   };
 
   useEffect(() => {
     getResponseList();
-    getclassData();
-    console.log("ini merupakan response", responseList);
+    getClassData();
   }, [currentPage]);
-  
+
   useEffect(() => {
     if (headData.qtype?.includes("multi-rating")) {
       const respondent = headData.respondent;
@@ -62,62 +56,58 @@ export default function EMODDetail() {
         const firstItemHeaders = headerArray.flatMap((itemArray, index) => {
           if (qtypeArray[index] == "multi-rating") {
             return itemArray[0];
-          }else{
-            return[];
+          } else {
+            return [];
+          }
+        });
+
+        const dHeader = headerArray.flatMap((itemArray, index) => {
+          if (qtypeArray[index] == "multi-rating") {
+            if (parameter.status == "Dosen" || parameter.status == "Class") {
+              const p = parameter.paramList;
+              return p.map(param => `${param} ${itemArray[0]}`);
+            }
+          } else {
+            return [];
           }
         });
 
         setHeader(firstItemHeaders);
-        
-        // if(parameter.status == ""){
-        //   setHeader(headerArray);
-        // } else if(parameter.status == "Dosen" || parameter.status == "Class"){
-        //   const p = parameter.paramList;
-        //   const firstItemHeaders = headerArray.flatMap((itemArray, index) => {
-        //     if (qtypeArray[index] == "multi-rating") {
-        //       return p.map(param => `${param} ${itemArray[0]}`);
-        //     } else {              
-        //       return itemArray[0];
-        //     }
-        //   });
-        //   setHeader(firstItemHeaders);
-        // }
       } catch (error) {
         console.error("Error parsing header data:", error);
       }
-    }    
-    console.log("ini merupakan headData", headData);
-    console.log("ini merupakan HEADER", header);
+    }
   }, [headData, parameter]);
-  
+
   useEffect(() => {
     const newAnswer = responseList.map(response => {
       try {
         const parsedAnswer = JSON.parse(response.answer);
-            // Iterate over each key in parsedAnswer
-            Object.keys(parsedAnswer).forEach(key => {
-                if (Array.isArray(parsedAnswer[key])) {
-                    parsedAnswer[key] = parsedAnswer[key].join(', ');
-                }
-            });
-            return parsedAnswer;
+        // Iterate over each key in parsedAnswer
+        Object.keys(parsedAnswer).forEach(key => {
+          if (Array.isArray(parsedAnswer[key])) {
+            parsedAnswer[key] = parsedAnswer[key].join(', ');
+          }
+        });
+        return parsedAnswer;
       } catch (error) {
         console.error("Error parsing answer:", error);
         return [];
       }
     });
     setAnswer(newAnswer);
-    console.log("ini adalah answer ajaaa", answer);
   }, [responseList]);
-  
-  function getclassData() {
-    axios.get('http://localhost/timetofill/class.php').then(function (response) {
-      setclassData(response.data);
-    });
-  }
+
+  useEffect(() => {
+    const currentData = classData.slice(
+      (currentPage - 1) * itemsPerPage,
+      currentPage * itemsPerPage
+    );
+  }, [classData, currentPage, answer, header]);
+
 
   function getParameter() {
-    axios.get(`http://localhost/timetofill/response_parameter.php?form_id=${id}`).then(function(response) {
+    axios.get(`http://localhost/timetofill/response_parameter.php?form_id=${id}`).then(function (response) {
       if (response.data.parameter) {
         const param = response.data.parameter.split(',');
         setCheckParameter(prevState => ({
@@ -131,7 +121,7 @@ export default function EMODDetail() {
   }
 
   function getResponseList() {
-    axios.get(`http://localhost/timetofill/response.php?form_id=${id}`).then(function(response) {
+    axios.get(`http://localhost/timetofill/response.php?form_id=${id}`).then(function (response) {
       if (response.data) {
         setResponseList(response.data.response || []);
         setHeadData(response.data.head || {});
@@ -146,15 +136,99 @@ export default function EMODDetail() {
     });
   }
 
-  const totalPages = Math.ceil(classData.length / itemsPerPage);
+  function getClassData() {
+    axios.get('http://localhost/timetofill/class.php').then(function (response) {
+      setClassData(response.data);
+    });
+  }
 
-  const currentData = classData.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
+  const totalPages = Math.ceil(classData.length / itemsPerPage);
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
+  const handleFilterScore = (headerItem, classData) => {
+    let totalSum = 0;
+    let count = 0;
+
+    answer.forEach(row => {
+      Object.entries(row).forEach(([key, values]) => {
+        if (key.includes(headerItem) && key.includes(classData)) {
+          const valueArray = values.split(", ").map(Number);
+          totalSum += valueArray.reduce((acc, val) => acc + val, 0);
+          count += 1; // Jumlah nilai yang cocok
+        }
+      });
+    });
+    // Jika ada data yang cocok, hitung rata-rata
+    return count > 0 ? (totalSum / count).toFixed(2) : 0.00;
+  };
+
+  const handleTotal = (dosen) => {
+    let totalSum = 0;
+
+    header.forEach(headerItem => {
+      // Konversi hasil ke angka sebelum penjumlahan
+      totalSum += parseFloat(handleFilterScore(headerItem, dosen));
+    });
+
+    // Format total dengan dua angka desimal
+    return totalSum.toFixed(2);
+  };
+
+  const handleResult = (dosen) => {
+    const total = handleTotal(dosen);
+    return (total / 4).toFixed(2); // Membagi total dengan 4 dan membulatkan hasilnya
+  };
+
+  const countUsernameOccurrences = (username) => {
+    let count = 0;
+    const today = new Date();
+
+    classData.forEach(item => {
+      const validToDate = new Date(item.valid_to);
+
+      if (validToDate > today) {
+        for (let i = 1; i <= 6; i++) {
+          const variableKey = `variable_${i}`;
+          if (item[variableKey] && item[variableKey].includes(username)) {
+            count++;
+          }
+        }
+      }
+    });
+
+    return count;
+  };
+
+  const exportToXLSX = () => {
+    // Membuat array data untuk diekspor
+    const exportData = classData.map((classData, index) => {
+      const row = {
+        // No: (currentPage - 1) * itemsPerPage + index + 1,
+        // Username: dosen.username,
+        // Name: dosen.name,
+        // Total: handleTotal(dosen.username),
+        // Result: handleResult(dosen.username),
+        // Class: countUsernameOccurrences(dosen.username),
+        // Rank: dosen.rank
+      };
+
+      // Tambahkan data header ke dalam baris
+      header.forEach((head, headIndex) => {
+        row[head] = handleFilterScore(head, classData.class);
+      });
+
+      return row;
+    });
+
+    // Membuat worksheet dan workbook
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "EDOM Data");
+
+    // Menyimpan file XLSX
+    XLSX.writeFile(workbook, "EDOM_Data.xlsx");
+  };
 
   return (
     <>
@@ -162,63 +236,48 @@ export default function EMODDetail() {
         <NavBar />
         <div className="w-screen flex-grow flex flex-col items-center px-20 my-4">
           <div className="flex justify-between w-full ">
-              <h1 className="flex items-center w-10/12 h-24 text-3xl text-blue-800 font-semibold bg-transparent text-wrap">Result : {headData.name_form}</h1>
-              <div className="w-3/12 flex items-center gap-x-1 justify-end">
-                  <button className="w-32 h-10 rounded bg-[#577BC1] tracking-widest text-sm text-[#f8fafc] px-2">Publish</button>
-                  {statusEDOM === "Published" ? (
-                    <button className="w-32 h-10 rounded bg-[#577BC1] tracking-widest text-sm text-[#f8fafc] px-2">Cancel Publish</button>
-                  ) : (null)}
-                  <button onClick={backToResponseList} className="w-32 h-10 rounded bg-[#577BC1] tracking-widest text-sm text-[#f8fafc] px-2">Back</button>
-              </div>
+            <h1 className="flex items-center w-10/12 h-24 text-3xl text-blue-800 font-semibold bg-transparent text-wrap">Result : {headData.name_form}</h1>
+            <div className="w-3/12 flex items-center gap-x-1 justify-end">
+              <button className="w-32 h-10 rounded bg-[#577BC1] tracking-widest text-sm text-[#f8fafc] px-2" onClick={exportToXLSX}>Export</button>
+              <button className="w-32 h-10 rounded bg-[#577BC1] tracking-widest text-sm text-[#f8fafc] px-2" onClick={backToResponseList}>Back</button>
+            </div>
           </div>
-          <div className="flex w=full mb-4 justify-start text-blue-950">
-            <p><b>Status : </b> {statusEDOM}</p>
-            <p className="px-8"><b>Published : </b> {statusEDOM}</p>
-          </div>
-          <div className="w-full overflow-x-auto scrollbar-thin scrollbar-thumb-blue-700 scrollbar-track-blue-300">
-            <table className="min-w-full align-middle table-auto text-left overflow text-sm">
-              <thead className="h-10 max-h-24 overflow-hidden bg-[#577BC1] text-center text-[#f8fafc] font-normal">
-                <tr className="align-middle">
-                  <th scope="col" className="w-12">#</th>
-                  <th scope="col" className="w-20">Class</th>              
-                  {
-                    header.map((header, index) => (
-                      <th key={index} scope="col" className="w-32" title={header} ><p className="line-clamp-3" >{header}</p></th>
-                    ))
-                  }
-                  <th scope="col" className="w-24">Total</th>                  
-                  <th scope="col" className="w-24">Dosen</th>                  
-                  <th scope="col" className="w-24">Result</th>                   
+          <table className="table-auto w-full mt-5">
+            <thead className="h-10 max-h-24 overflow-hidden bg-[#577BC1] text-center text-[#f8fafc] font-normal text-sm">
+              <tr>
+                <th className="w-1/12 px-4 py-2 border">No</th>
+                <th className="w-1/12 px-4 py-2 border">Class</th>
+                <th className="w-4/12 px-4 py-2 border">Penilaian</th>
+                {/* <th className="w-4/12 px-4 py-2 border">Total</th> */}
+                <th className="w-1/12 px-4 py-2 border">Dosen</th>
+                <th className="w-1/12 px-4 py-2 border">Result</th>
+              </tr>
+            </thead>
+            <tbody className="text-sm text-center">
+              {classData.map((classData, index) => (
+                <tr key={classData.class}>
+                  <td className="border px-4 py-2">{(currentPage - 1) * itemsPerPage + index + 1}</td>
+                  <td className="border px-4 py-2">{classData.class}</td>
+                  {header.map((head, headIndex) => (
+                    <td key={headIndex} className="border px-4 py-2">{handleFilterScore(head, classData.class)}</td>
+                  ))}
+                  {/* <td className="border px-4 py-2">{handleTotal(classData.class)}</td> */}
+                  {/* <td className="border px-4 py-2">{handleResult(classData.class)}</td>
+                  <td className="border px-4 py-2">{countclassOccurrences(classData.class)}</td> */}
                 </tr>
-              </thead>
-              <tbody className="align-middle text-blue-900 text-sm">
-                {
-                  currentData.map((classData, index) => (
-                    <tr className="border border-gray-300 h-8" key={index}>
-                      <td className="w-12 text-center ">{(currentPage - 1) * itemsPerPage + index + 1}</td>
-                      <td className="border border-gray-300 text-center ">{classData.class}</td>                  
-                      
-                    </tr>
-                  ))
-                }
-              </tbody>
-            </table>
-          </div>
+              ))}
+            </tbody>
+          </table>
           <div className="flex justify-center mt-4">
-            <nav>
-              <ul className="flex list-none">
-                {[...Array(totalPages)].map((_, index) => (
-                  <li key={index} className="mx-1">
-                    <button
-                      onClick={() => paginate(index + 1)}
-                      className={`px-3 py-1 rounded ${currentPage === index + 1 ? 'bg-[#577BC1] text-white' : 'bg-white text-gray-700'}`}
-                    >
-                      {index + 1}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </nav>
+            {/* {Array.from({ length: totalPages }, (_, index) => (
+              <button
+                key={index}
+                onClick={() => paginate(index + 1)}
+                className={`mx-1 px-3 py-1 rounded ${currentPage === index + 1 ? 'bg-[#577BC1] text-white' : 'bg-gray-200 text-gray-700'}`}
+              >
+                {index + 1}
+              </button>
+            ))} */}
           </div>
         </div>
       </div>

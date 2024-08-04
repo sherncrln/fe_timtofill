@@ -5,6 +5,7 @@ import FormList from "./FormList";
 
 export default function Home() {
   const logged_data = JSON.parse(localStorage.getItem("logged_data"));
+  const user_id = logged_data ? logged_data.user_id : null;
   const navigate = useNavigate();
 
   return (
@@ -22,7 +23,7 @@ export default function Home() {
             <>
               <p className="w-full text-3xl text-blue-800 font-semibold tracking-widest mt-14 mb-6"> It’s time to fill the form!</p>
               <button onClick={() => {navigate('/history')}} className="w-32 h-10 rounded bg-[#577BC1] tracking-widest text-[#f8fafc] mr-4">History</button>
-              <button className="w-32 h-10 rounded bg-[#577BC1] tracking-widest text-[#f8fafc]">EDOM Result</button>
+              <button onClick={() => {navigate(`/edom/${user_id}/view`)}} className="w-32 h-10 rounded bg-[#577BC1] tracking-widest text-[#f8fafc]">EDOM Result</button>
             </>
             ): logged_data['category'] === "Mahasiswa" || logged_data['category'] === "Staff" ? (
             <>

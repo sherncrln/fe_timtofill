@@ -23,7 +23,7 @@ export default function Validation(values) {
     if(values.password === ""){
         error.password = "Password should not be empty"
     }else if(!password_pattern.test(values.password)){
-        error.password = "Password did not match"
+        error.password = "Password must be at least 8 characters long and contain at least one lowercase letter, one uppercase letter, and one number."
     }else{
         error.password = ""
     }

@@ -8,8 +8,6 @@ export default function EDOMDetail() {
   const [responseList, setResponseList] = useState([]);
   const [headData, setHeadData] = useState([]);
   const [header, setHeader] = useState([]);
-  const [dosenHeader, setDosenHeader] = useState([]);
-  const [newHeaderData, setNewHeaderData] = useState([]);
   const [answer, setAnswer] = useState({});
   const [currentPage, setCurrentPage] = useState(1);
   const [parameter, setCheckParameter] = useState({
@@ -34,6 +32,7 @@ export default function EDOMDetail() {
     getResponseList();
     getDosenList();
     getClass();
+    getPublishStatus();
   }, [currentPage]);
 
   useEffect(() => {
@@ -82,7 +81,6 @@ export default function EDOMDetail() {
         });
 
         setHeader(firstItemHeaders);
-        setDosenHeader(dHeader);
       } catch (error) {
         console.error("Error parsing header data:", error);
       }
@@ -124,11 +122,11 @@ export default function EDOMDetail() {
       status_edom: "Published",
       dosen_id: (dosen.username),
       last_published: new Date().toISOString().slice(0, 10),
-      total: handleTotal(dosen.username) || 0,
-      class: countUsernameOccurrences(dosen.username) || 0,
-      result: handleResult(dosen.username) || 0,
+      total: handleTotal(dosen.username) || '',
+      class: countUsernameOccurrences(dosen.username) || '',
+      result: handleResult(dosen.username) || '',
       rank: dosen.rank || '',
-      predikat: handleTotal(dosen.username) != 0 ? "Sangat Baik" : ""
+      predikat: handleTotal(dosen.username) != '0' ? "Sangat Baik" : ""
     }));
     
     console.log("Data yang akan diposting:", publishData); // Tambahkan log ini
@@ -146,9 +144,17 @@ export default function EDOMDetail() {
   };
 
   const handleUnpublish = () => {
-    axios.post(`http://localhost/timetofill/unpublish_edom.php`, {
+    // Ambil data dari rankedData dan buat array dengan data yang akan dikirim
+    const unpublishData = rankedData.map(dosen => ({
       form_id: id,
       status_edom: "On Process",
+      dosen_id: dosen.username,
+    }));
+  
+    axios.post(`http://localhost/timetofill/unpublish_edom.php`, unpublishData, {
+      headers: {
+        'Content-Type': 'application/json'
+      }
     })
     .then((response) => {
       setStatusEDOM("On Process");
@@ -159,6 +165,19 @@ export default function EDOMDetail() {
       setPublishMessage("Failed to unpublish EDOM. Please try again.");
     });
   };
+
+  function getPublishStatus() {
+    axios.get(`http://localhost/timetofill/publish_edom.php?form_id=${id}`)
+      .then((response) => {
+        if (response.data) {
+          setStatusEDOM(response.data.status_edom || "On Process");
+          setPublishDate(response.data.publish_date || "");
+        }
+      })
+      .catch((error) => {
+        console.error("Error fetching publish status:", error);
+      });
+  }
 
   function getDosenList() {
     axios.get(`http://localhost/timetofill/dosen.php`).then(function (response) {
@@ -336,20 +355,20 @@ export default function EDOMDetail() {
           <table className="table-auto w-full mt-5">
             <thead className="h-10 max-h-24 overflow-hidden bg-[#577BC1] text-center text-[#f8fafc] font-normal text-sm">
               <tr>
-                <th className="w-20 px-4 py-2 border">No</th>
-                <th className="w-20 px-4 py-2 border">Username</th>
-                <th className="w-20 px-4 py-2 border">Name</th>
+                <th className="w-1/12 px-4 py-2 border">No</th>
+                <th className="w-1/12 px-4 py-2 border">Username</th>
+                <th className="w-4/12 px-4 py-2 border">Name</th>
                 {header.map((head, index) => (
                   <th key={index} className="w-20 px-4 py-2 border">{head}</th>
                 ))}
-                <th className="w-20 px-4 py-2 border">Total</th>
-                <th className="w-20 px-4 py-2 border">Result</th>
-                <th className="w-20 px-4 py-2 border">Class</th>
-                <th className="w-20 px-4 py-2 border">Rank</th>
-                <th className="w-20 px-4 py-2 border">Predikat</th>
+                <th className="w-1/12 px-4 py-2 border">Total</th>
+                <th className="w-1/12 px-4 py-2 border">Result</th>
+                <th className="w-1/12 px-4 py-2 border">Class</th>
+                <th className="w-1/12 px-4 py-2 border">Rank</th>
+                <th className="w-1/12 px-4 py-2 border">Predikat</th>
               </tr>
             </thead>
-            <tbody className="text-sm">
+            <tbody className="text-sm text-center">
               {rankedData.map((dosen, index) => (
                 <tr key={dosen.username}>
                   <td className="border px-4 py-2">{(currentPage - 1) * itemsPerPage + index + 1}</td>

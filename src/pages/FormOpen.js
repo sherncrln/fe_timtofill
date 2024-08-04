@@ -430,30 +430,14 @@ function Question({ index, quest, type, parameter, handleChange, paramDetail, pa
                                 ))}
                             </select>
                         </div>
-                    ) : type[index][0] === "multi-text" ? (
-                        <div className="flex flex-row">
-                            {(parameter === "Mahasiswa" || parameter === "Dosen") && (
-                                <p name="multi-text" className="w-1/4 px-4 py-2 text-md text-gray-600 font-semibold bg-transparent">
-                                    Parameter : {parameter === "Mahasiswa" ? "Variable" : "Class"}
-                                </p>
-                            )}
-                            <input
-                                disabled
-                                type="text"
-                                id="multi-text"
-                                name="multi-text"
-                                className="w-3/4 px-4 py-2 text-md text-blue-800 font-semibold bg-slate-300" 
-                                onChange={handleChange}
-                            />
-                        </div>
                     ) : type[index][0] === "multi-rating" ? (
                         <div className="justify-center items-center">
                             <div className="flex flex-row pb-2">
                                 <div className="w-6/12"></div>
                                 {(parameter === "Mahasiswa") ? paramName.map((pname, index) => (
-                                    <p key={index} name="multi-text" className="w-1/12 max-h-16 text-sm text-center font-semibold">{pname}</p>
+                                    <p key={index} name="multi-rating" className="w-1/12 max-h-16 text-sm text-center font-semibold">{pname}</p>
                                 )): (parameter === "Dosen") && paramDetail.map((param, index) => (
-                                    <p key={index} name="multi-text" className="w-1/12 max-h-16 text-sm text-center font-semibold">{param}</p>
+                                    <p key={index} name="multi-rating" className="w-1/12 max-h-16 text-sm text-center font-semibold">{param}</p>
                                 ))}    
                             </div>
                             {subQuestions.map((subQuestion, subIndex) => (

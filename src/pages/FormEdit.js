@@ -120,8 +120,8 @@ export default function FormEdit() {
     };
     
     const handleQTypeChange = (index, value) => {
-        if (!formDetail.respondent && (value === "multi-text" || value === "multi-rating")) {
-            setError("Please select Respondent before choosing Multi-Text or Multi-Rating.");
+        if (!formDetail.respondent && value === "multi-rating") {
+            setError("Please select Respondent before choosing Multi-Rating.");
             return;
         }
 
@@ -340,7 +340,6 @@ function Question({ index, quest, type, parameter, handleQuestionChange, handleQ
                     <option value="checkbox">Check Box</option>
                     <option value="radio">Radio Button</option>
                     <option value="radio-rating">Rating Button</option>
-                    <option value="multi-text">Multi-Text</option>
                     <option value="multi-rating">Multi-Rating</option>
                 </select>
                 <img
@@ -406,26 +405,11 @@ function Question({ index, quest, type, parameter, handleQuestionChange, handleQ
                         </div>
                         <button type="button" onClick={addTypeOption} className="w-full size-8 text-md px-4 py-2 bg-[#f8fafc] flex items-center justify-center text-[#577BC1] rounded shadow-sm hover:text-blue-400 hover:bg-stone-100">Add Option</button>
                     </>
-                    ) : type[index][0] === "multi-text" ? (
-                        <div className="flex flex-row">
-                            {(parameter === "Mahasiswa" || parameter === "Dosen") && (
-                                <p name="multi-text" className="w-1/4 px-4 py-2 text-md text-gray-600 font-semibold bg-transparent">
-                                    Parameter : {parameter === "Mahasiswa" ? "Variable" : "Class"}                                    
-                                </p>
-                            )}
-                            <input
-                                disabled
-                                type="text"
-                                id="multi-text"
-                                name="multi-text"
-                                className="w-3/4 px-4 py-2 text-md text-blue-800 font-semibold bg-slate-300" 
-                            />  
-                        </div>
                     ) : type[index][0] === "multi-rating" ? (
                         <>                        
                             <div className="justify-center items-center">
                             {(parameter === "Mahasiswa" || parameter === "Dosen") && (
-                                <p name="multi-text" className="w-1/4 px-4 py-2 text-md text-gray-600 font-semibold bg-transparent">
+                                <p name="multi-rating" className="w-1/4 px-4 py-2 text-md text-gray-600 font-semibold bg-transparent">
                                     Parameter : {parameter === "Mahasiswa" ? "Variable" : "Class"}
                                     
                                 </p>

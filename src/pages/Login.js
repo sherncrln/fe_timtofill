@@ -56,7 +56,8 @@ export default function Login() {
                     navigate("/home");
                 }
             }).catch(error => {
-                setError(error);
+                // setError(error);
+                setError("An unexpected error occurred. Please try again later.");
                 console.error("Error:", error);
                 });
             } else {

@@ -181,6 +181,7 @@ export default function ResponseDetail() {
           dataObject[header] = ''; 
         }
       });
+      console.log(headers);
   
       return dataObject;
     });
