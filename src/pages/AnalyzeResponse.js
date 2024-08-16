@@ -13,7 +13,30 @@ import { Bar } from "react-chartjs-2";
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 import NavBar from "../components/NavBar";
 import axios from "axios";
-
+import { Page, Text, View, Document, PDFDownloadLink, StyleSheet } from "@react-pdf/renderer";
+const styles = StyleSheet.create({
+  page: {
+    padding: 20,
+    fontSize: 12,
+  },
+  section: {
+    marginBottom: 10,
+  },
+  questionTitle: {
+    fontSize: 14,
+    marginBottom: 5,
+    fontWeight: 'bold',
+  },
+  answerText: {
+    marginBottom: 2,
+  },
+  image: {
+    marginVertical: 15,
+    marginHorizontal: 100,
+    width: 400,
+    height: 200,
+  }
+});
 
 ChartJS.register(
   CategoryScale,
@@ -162,6 +185,34 @@ export default function AnalyzeResponse() {
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
+  const MyDocument = () => (
+    <Document>
+      <Page style={styles.page}>
+        <Text style={styles.section}>Analyze : {headData.name_form}</Text>
+        {header.map((question, index) => (
+          <View key={index} style={styles.section}>
+            <Text style={styles.questionTitle}>{(currentPage - 1) * itemsPerPage + index + 1}. {question}</Text>
+            {(qtypeList[index] && ["radio", "radio-rating", "dropdown", "checkbox"].includes(qtypeList[index][0])) ? (
+              <Text style={styles.answerText}>
+                Data: {
+                  Array.isArray(dataOption[index]) && Array.isArray(dataCountOption[index])
+                    ? dataOption[index].map((option, optionIndex) => 
+                        `${option} ${dataCountOption[index][optionIndex]}`
+                      ).join(', ')
+                    : 'No data available'
+                }
+              </Text>
+            ) : (
+              answer.map((ans, ansIndex) => (
+                <Text key={ansIndex} style={styles.answerText}>{ans[question]}</Text>
+              ))
+            )}
+          </View>
+        ))}
+      </Page>
+    </Document>
+  );
+
   return (
     <>
       <div className="min-h-screen flex flex-col">
@@ -255,6 +306,11 @@ export default function AnalyzeResponse() {
                   </li>
                 ))}
               </ul>
+              <div className="my-4 flex items-center justify-center">
+                <PDFDownloadLink document={<MyDocument />} fileName="analyze-response.pdf">
+                  {({ loading }) => (loading ? "Loading document..." : <button>Export to PDF</button>)}
+                </PDFDownloadLink>
+              </div>
             </nav>
           </div>
         </div>
